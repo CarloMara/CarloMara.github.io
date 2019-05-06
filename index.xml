@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Carlo Maragno</title>
+    <link>https://carlo.marag.no/</link>
+    <description>Recent content on Carlo Maragno</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 May 2019 17:42:08 +0200</lastBuildDate>
+    
+	<atom:link href="https://carlo.marag.no/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Intentio</title>
+      <link>https://carlo.marag.no/posts/intentio/</link>
+      <pubDate>Mon, 06 May 2019 17:42:08 +0200</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/intentio/</guid>
+      <description>Of this space It&amp;rsquo;s to document my ride in the word of modern teconologies.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     
-    <title>Carlo Maragno </title>
+    <title>Carlo Maragno  | Add Custom Ioctls Qemu</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -29,34 +29,42 @@
     
 
     
-      <link href="https://carlo.marag.no/index.xml" rel="alternate" type="application/rss+xml" title="Carlo Maragno" />
-      <link href="https://carlo.marag.no/index.xml" rel="feed" type="application/rss+xml" title="Carlo Maragno" />
-    
 
-    <meta property="og:title" content="Carlo Maragno" />
-<meta property="og:description" content="This is what I&#39;m doing. Hope you find it intresting" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://carlo.marag.no/" />
+    <meta property="og:title" content="Add Custom Ioctls Qemu" />
+<meta property="og:description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
+Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://carlo.marag.no/posts/add-custom-ioctls-qemu/" />
+<meta property="article:published_time" content="2019-05-06T13:14:49&#43;02:00"/>
+<meta property="article:modified_time" content="2019-05-06T13:14:49&#43;02:00"/>
 
-<meta property="og:updated_time" content="2019-05-06T17:42:08&#43;02:00"/>
+<meta itemprop="name" content="Add Custom Ioctls Qemu">
+<meta itemprop="description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
+Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?">
 
-<meta itemprop="name" content="Carlo Maragno">
-<meta itemprop="description" content="This is what I&#39;m doing. Hope you find it intresting">
 
+<meta itemprop="datePublished" content="2019-05-06T13:14:49&#43;02:00" />
+<meta itemprop="dateModified" content="2019-05-06T13:14:49&#43;02:00" />
+<meta itemprop="wordCount" content="95">
+
+
+
+<meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Carlo Maragno"/>
-<meta name="twitter:description" content="This is what I&#39;m doing. Hope you find it intresting"/>
+<meta name="twitter:title" content="Add Custom Ioctls Qemu"/>
+<meta name="twitter:description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
+Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?"/>
 
   </head>
 
   <body class="ma0 avenir bg-near-white">
 
     
+   
+  
 
-  
-  
-  <header class="cover bg-top" style="background-image: url('https://carlo.marag.no/images/mojave_small.jpg'); background-position: center">
-    <div class="bg-black-60">
+  <header>
+    <div class="bg-moon-gray">
       <nav class="pv3 ph3 ph4-ns" role="navigation">
   <div class="flex-l justify-between items-center center">
     <a href="https://carlo.marag.no" class="f3 fw2 hover-white no-underline white-90 dib">
@@ -80,78 +88,54 @@
   </div>
 </nav>
 
-      <div class="tc-l pv4 pv6-l ph3 ph4-ns">
-        <h1 class="f2 f-subheadline-l fw2 white-90 mb0 lh-title">
-          Carlo Maragno
-        </h1>
-        
-          <h2 class="fw1 f5 f3-l white-80 measure-wide-l center mt3">
-            This is what I&#39;m doing. Hope you find it intresting
-          </h2>
-        
-      </div>
     </div>
   </header>
 
 
+
     <main class="pb7" role="main">
       
-  <article class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy mid-gray">
-    
+  
+  <article class="flex-l flex-wrap justify-between mw9 center ph3">
+
+    <header class="mt4 w-100">
+      <p class="f6 b helvetica tracked">
+          
+        POSTS
+      </p>
+      <h1 class="f1 athelas mb1">Add Custom Ioctls Qemu</h1>
+      
+      <time class="f6 mv4 dib tracked" datetime="2019-05-06T13:14:49&#43;02:00">May 6, 2019</time>      
+      
+      
+    </header>
+
+    <section class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l">
+
+<h1 id="how-to-add-ioctls-to-qemu">How to add IOCTLS to qemu?</h1>
+
+<p>Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible.
+Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.</p>
+
+<p>Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture? What architectures are we talkning about? What binaries do I want to run?</p>
+
+<p>Ok, I&rsquo;m reversing this embedded update process that&rsquo;s</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6">
+        
+      </div>
+    </section>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
   </article>
-  
-  
-  
-  
-  
-  
-  
-    
-    
-
-    <div class="mw9 center ph3">
-      
-       
-          <h1 class="flex-none">
-            Recent Posts
-          </h1>
-        
-
-      
-
-      <section class="w-100 mw8">
-        
-        
-          <div class="relative w-100 mb4">
-            
-<article class="bb b--black-10">
-  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
-    <div class="flex flex-column flex-row-ns">
-      
-      <div class="blah w-100">
-        <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/intentio/" class="color-inherit dim link">
-            Intentio
-            </a>
-        </h1>
-        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          Of this space It&rsquo;s to document my ride in the word of modern teconologies.
-        </div>
-          <a href="/posts/intentio/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-        
-      </div>
-    </div>
-  </div>
-</article>
-
-          </div>
-        
-      </section>
-
-      
-
-      </div>
-  
 
     </main>
     <footer class="bg-moon-gray bottom-0 w-100 pa3" role="contentinfo">
