@@ -6,10 +6,22 @@
     <description>Recent content in Posts on Carlo Maragno</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 May 2019 17:42:08 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 06 May 2019 21:38:00 +0200</lastBuildDate>
     
 	<atom:link href="https://carlo.marag.no/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Add Custom IOCTL to QEMU</title>
+      <link>https://carlo.marag.no/posts/add-custom-ioctls-qemu/</link>
+      <pubDate>Mon, 06 May 2019 21:38:00 +0200</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/add-custom-ioctls-qemu/</guid>
+      <description>Introduction In this post I&amp;rsquo;ll try to explain how to add unsupported system calls to QEMU user.
+The first part will give a bit of high-level context, as to answer the question why are you doing this?
+The second part will be about the system call that was missing and that will be implemented.
+The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.</description>
+    </item>
     
     <item>
       <title>Intentio</title>

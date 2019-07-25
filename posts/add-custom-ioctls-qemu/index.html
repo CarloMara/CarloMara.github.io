@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     
-    <title>Carlo Maragno  | Add Custom Ioctls Qemu</title>
+    <title>Carlo Maragno  | Add Custom IOCTL to QEMU</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.55.3" />
+    <meta name="generator" content="Hugo 0.55.6" />
     
     
       <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
@@ -19,9 +19,11 @@
 
     
     
-      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+      <link href="/dist/css/app.4fd713c14c5ced091967dfd2158d4cca.css" rel="stylesheet">
     
 
+    
+      <link rel="stylesheet" href="/gruvbox.css">
     
 
     
@@ -30,31 +32,41 @@
 
     
 
-    <meta property="og:title" content="Add Custom Ioctls Qemu" />
-<meta property="og:description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
-Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?" />
+    <meta property="og:title" content="Add Custom IOCTL to QEMU" />
+<meta property="og:description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
+The first part will give a bit of high-level context, as to answer the question why are you doing this?
+The second part will be about the system call that was missing and that will be implemented.
+The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://carlo.marag.no/posts/add-custom-ioctls-qemu/" />
-<meta property="article:published_time" content="2019-05-06T13:14:49&#43;02:00"/>
-<meta property="article:modified_time" content="2019-05-06T13:14:49&#43;02:00"/>
+<meta property="article:published_time" content="2019-05-06T21:38:00&#43;02:00"/>
+<meta property="article:modified_time" content="2019-05-06T21:38:00&#43;02:00"/>
 
-<meta itemprop="name" content="Add Custom Ioctls Qemu">
-<meta itemprop="description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
-Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?">
+<meta itemprop="name" content="Add Custom IOCTL to QEMU">
+<meta itemprop="description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
+The first part will give a bit of high-level context, as to answer the question why are you doing this?
+The second part will be about the system call that was missing and that will be implemented.
+The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.">
 
 
-<meta itemprop="datePublished" content="2019-05-06T13:14:49&#43;02:00" />
-<meta itemprop="dateModified" content="2019-05-06T13:14:49&#43;02:00" />
-<meta itemprop="wordCount" content="95">
+<meta itemprop="datePublished" content="2019-05-06T21:38:00&#43;02:00" />
+<meta itemprop="dateModified" content="2019-05-06T21:38:00&#43;02:00" />
+<meta itemprop="wordCount" content="2552">
 
 
 
 <meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Add Custom Ioctls Qemu"/>
-<meta name="twitter:description" content="How to add IOCTLS to qemu? Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible. Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.
-Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture?"/>
+<meta name="twitter:title" content="Add Custom IOCTL to QEMU"/>
+<meta name="twitter:description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
+The first part will give a bit of high-level context, as to answer the question why are you doing this?
+The second part will be about the system call that was missing and that will be implemented.
+The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU."/>
 
+
+    
+    <link rel="stylesheet" type="text/css" href="/asciinema-player.css" />
+    
   </head>
 
   <body class="ma0 avenir bg-near-white">
@@ -67,24 +79,12 @@ Let me just give you a bit of context. Why I want to run binaries copiled for a 
     <div class="bg-moon-gray">
       <nav class="pv3 ph3 ph4-ns" role="navigation">
   <div class="flex-l justify-between items-center center">
-    <a href="https://carlo.marag.no" class="f3 fw2 hover-white no-underline white-90 dib">
+    <a href="https://carlo.marag.no" class="f3 fw2 hover-mid-gray dark-gray no-underline dib">
       <i class="fas fa-home"></i>
     </a>
     <div class="flex-l items-center">
       
 
-      
-        <ul class="pl0 mr3">
-          
-          <li class="list f5 f4-ns fw4 dib pr3">
-            <a class="hover-white no-underline white-90" href="/posts/" title="Posts page">
-              Posts
-            </a>
-          </li>
-          
-        </ul>
-      
-    </div>
   </div>
 </nav>
 
@@ -99,27 +99,254 @@ Let me just give you a bit of context. Why I want to run binaries copiled for a 
   <article class="flex-l flex-wrap justify-between mw9 center ph3">
 
     <header class="mt4 w-100">
-      <p class="f6 b helvetica tracked">
+      <p class="f6 b tracked">
           
         POSTS
       </p>
-      <h1 class="f1 athelas mb1">Add Custom Ioctls Qemu</h1>
+      <h1 class="f1  mb1">Add Custom IOCTL to QEMU</h1>
       
-      <time class="f6 mv4 dib tracked" datetime="2019-05-06T13:14:49&#43;02:00">May 6, 2019</time>      
+      <time class="f6 mv4 dib tracked" datetime="2019-05-06T21:38:00&#43;02:00">May 6, 2019</time>      
       
       
     </header>
 
-    <section class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l">
+    <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l">
 
-<h1 id="how-to-add-ioctls-to-qemu">How to add IOCTLS to qemu?</h1>
+<h1 id="introduction">Introduction</h1>
 
-<p>Sometimes, you may wish to excute a program copiled for a different architecture than your curent host. That, according to the books is kinda impossible.
-Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&rsquo;s basically build on magic, and just works.</p>
+<p>In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.</p>
 
-<p>Let me just give you a bit of context. Why I want to run binaries copiled for a different architecture? What architectures are we talkning about? What binaries do I want to run?</p>
+<p>The first part will give a bit of high-level context, as to answer the question <em>why are you doing this?</em><br />
+The second part will be about the system call that was missing and that will be implemented.<br />
+The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.<br />
+Then will follow some closing remarks and personal thoughts.</p>
 
-<p>Ok, I&rsquo;m reversing this embedded update process that&rsquo;s</p>
+<p><em>I&rsquo;m currently writing this post, so expect some content changes</em></p>
+
+<h1 id="a-bit-of-context">A bit of context</h1>
+
+<p>You&rsquo;re reversing some kind of embedded ARM device update. You are doing fine with static analysis, but at some point you stumble across some very messy code. It does very wired things with some strange segments. Analyzing this by hand is usually painful and very time consuming, as you have to figure both the compression/encryption algorithms and the location of the data inside the update file.</p>
+
+<p>A faster approach for solving this problem is running the update and let it perform its job.<br />
+This can be done in two ways:</p>
+
+<ol>
+<li>Running the binary on instrumented hardware. Sometimes, if you&rsquo;re lucky, it&rsquo;s possible to dump the updated flash content. Unfortunately, this is a rare case, as most devices encrypt the flash. We&rsquo;re not getting into this scenario, as it&rsquo;s out of scope. Just know this is a very big can of worms.<br /></li>
+<li>Running the binary inside emulated hardware. Most of the times this is the best bet, especially if the hardware is running known uC or inside a Linux system. In the first case, common with ARM uC, you&rsquo;ll end up writing a custom loader which will help executing the program in QEMU user. In the second case, you can just use QEMU user.<br />
+<br /></li>
+</ol>
+
+<p>Let&rsquo;s suppose that we decided against option one, as the hardware it&rsquo;s not available. After some brief analysis we figured that the update is supposed to run inside a Linux-based machine.</p>
+
+<p>The next step is doing some reverse engineering to figure out things like command line parameters or environmental variables. Usually at this point you&rsquo;ll end up with a prompt like this:</p>
+
+<p>
+    <asciinema-player
+        src="/casts/257214.cast"
+        cols="640"
+        rows="10"
+        
+        preload="1"
+        
+        start-at="0"
+        speed="1"
+        
+        
+        
+        
+        
+        
+        
+        
+    ></asciinema-player>
+</p>
+
+<p>What problem are we facing? How do we get around this problem? What is an ioctl? How do we add them? How do we test our modifications?</p>
+
+<p>Please keep in mind that the reminder of the post will be about flash memory ioctl. I decided to go with this specific topic for several reasons, first and foremost because I believe in explanation by example. Clear and compelling examples are often better than lengthy theoretical discussion.<br />
+Flash memory ioctls are a compelling example because Linux can emulate flash memories, which lets you try the following even without custom hardware.<br />
+Another reason is that the whole memory subsystem is very small, which makes this a good playground if you never worked with the Linux codebase. Navigating large existing codebases, and especially Linux, is an essential skill for this kind of work.</p>
+
+<p><del>Honestly, there&rsquo;s also the fact that I actually had to implement this, so I had most of the stuff ready.</del>  Turns out that halfway through writing this post I found out that some key files were missing. I really don&rsquo;t know where they went.</p>
+
+<h2 id="syscalls-ioctl-mtd-and-friends">Syscalls, IOCTL, MTD and friends</h2>
+
+<p>Recall the snippet above, what does the error message mean?</p>
+
+<p><code>Unsupported ioctl: cmd=0xffffffff80204d01</code></p>
+
+<p>To better understand this message we need to digress a bit into syscalls and ioctl. The next few paragraphs will be about the relationship between files, syscalls and ioctl. Feel free to skip this.</p>
+
+<h3 id="syscalls">syscalls</h3>
+
+<p>Syscalls issue commands to the kernel. Syscalls are needed because not every resource can be accessed directly.<br />
+A simple example is reading the content of a file. Every programmer knows that to read a file you first call open, which will return a file descriptor, followed by a read, which hopefully will return your data. The kernel takes the burden of understanding which file you want and where its data is. It will perform these tasks with the help of a filesystem, which in most cases will be ext4.<br />
+Syscalls are cool, with them you don&rsquo;t need to worry about filesystems, disks or permission. If you can do it, the kernel will help you do it. If you can&rsquo;t your syscall will fail. As simple as that.</p>
+
+<p>Unfortunately, it&rsquo;s not so simple. The concept of a file as a container of information is really handy, because it lends very well both to the idea of user created data and to the idea of device data.</p>
+
+<p>Want to store some cat pictures? Store them in a file.<br />
+Want to store the current configuration of your flash memory? Well, a file also works well for that.<br />
+If you heard the saying that in Linux <em>everything is a file</em> this is what it means. A file it&rsquo;s just a concept for unique data container.</p>
+
+<p>This unfortunately complicates things quite a bit, because we need to distinguish between files that are used to store data and files that are used to store state of hardware devices.<br />
+While the kernel tries to minimize the difference between normal files and device files, for some operations, mainly direct interaction with hardware, the distinction is so big that a new systemcall is needed.</p>
+
+<h3 id="ioctl">ioctl</h3>
+
+<p>This is the new magic syscall that asks the kernel to control device-specific functions.<br />
+According to Wikipedia a good example of ioctl is CD-ROM disk ejection, as a ioctl is issued to the CD-ROM kernel module which then triggers the right sequence of commands to open the tray.</p>
+
+<p>Want to issue a specific command to a hardware device in your computer? Most of the times you will have to mess with ioctl. This is great, because with just one system call the kernel can address a wide variety of device commands, without complicating the general purpose interface. In comparison, Windows has a very different approach, where every device driver effectively creates new system calls. <em>very messy. so uncool.</em></p>
+
+<p>This is very relevant to our hypothetical goal of reversing an embedded updater. We need to know about system calls and ioctl, because flash memory management has a interface based on ioctl which has not been implemented in QEMU, thus the error above. In the next paragraph I&rsquo;ll discuss briefly about the MTD subsystem.</p>
+
+<h3 id="mtd">MTD</h3>
+
+<p>Most embedded systems will need a low-power, low-cost data storage solution. Even small mechanical HD are way too expensive for these applications. This used to be one of the limiting factors of embedded technologies, but thanks to the development of solid state-based storage solutions it&rsquo;s no longer a problem. There are mainly two types of solid storage solutions. We will focus only on raw flash.</p>
+
+<p>Raw flash is handled in Linux via the Memory Technology Device, MTD for short, that decouples the flash chip driver from filesystems and other utilities, making both software independent from one another.</p>
+
+<p>Ioctl and MTD meet at <code>/dev/mtdX</code> which is a character device managed by <code>mtdchar</code> (this is a concise way to refer to those special files meant for hardware handling that we discussed above). It provides ioctls to manipulate and erase blocks in the underlying flash memory.</p>
+
+<p>Please refer to <a href="https://bootlin.com/blog/managing-flash-storage-with-linux/">this blog post </a> by <a href="https://bootlin.com/blog/author/mike/">Michael Opdenacker</a> for more details regarding flash memories and Linux.</p>
+
+<h3 id="friends">Friends</h3>
+
+<p>So, as anticipated earlier, we now can fully understand QEMU&rsquo;s error message.</p>
+
+<p><code>Unsupported ioctl: cmd=0xffffffff80204d01</code></p>
+
+<p>As ioctl are meant to deal with specific hardware commands, QEMU can&rsquo;t implement all of them, which is the case here. Our ioctl fails because QEMU doesn&rsquo;t know how to pass it down to the host system.<br />
+Thankfully it&rsquo;s not too hard to add new ones. In simple terms, QEMU maps ioctl from the guest to the host semi-transparently via a set of macros. If the host system has a different endianness than the guest, you will need to create a helper function to translate the commands between the two systems, thus making the translation semi-transparent.</p>
+
+<h2 id="setup-an-environment-and-perform-the-actual-patch">Setup an environment and perform the actual patch</h2>
+
+<p>The QEMU compilation is finicky at best. You need the right libraries, the right compiler and most importantly the right libc.</p>
+
+<p>Manjaro doesn&rsquo;t have any of the required libraries. Ok, technically it does, but anecdotal evidence suggest that systemd could get angry if you change libc.<br />
+Ubuntu on the other hand has everything you&rsquo;ll ever need. So the plan is to create a docker container that can compile QEMU static and volume mount the QEMU source directory to the running container. This will allow you to use your standard dev tools and at the same time compile without too much hassle.</p>
+
+<p>You&rsquo;ll find everything inside the git repo for this project, but I&rsquo;d still like to go a bit through the various steps  as they might be non obvious for a beginner. At least they weren&rsquo;t for me.</p>
+
+<h3 id="dockerfile">Dockerfile</h3>
+
+<p>To build a docker container you&rsquo;ll need two things. A working docker installation and a dockerfile. You can find on-line plenty of tutorials on how to get started with docker. The following is the Dockerfile.</p>
+<div class="highlight"><pre class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">FROM</span><span class="s"> ubuntu:18.04</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="k">RUN</span> apt-get update <span class="o">&amp;&amp;</span> apt-get install -y git libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev python</code></pre></div>
+<p>Super simple, right? Let me walk through this a bit. With <code>FROM</code> we are basing our container on the image named <code>ubuntu:18.04</code>, docker will figure out if you have this image or if it has to download it from the Internet.<br />
+The next command, <code>RUN</code>, really just means run the following in a shell on the container. Because we only have to install some packages, we first update the apt registry, and than we install the packages required to compile QEMU.</p>
+
+<p>The next step is building the container. This can be done with:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">docker build -t qemu_build .</code></pre></div>
+<p>Note that the dot at the end is super important, as it&rsquo;s the path docker build will search for Dockerfile. <code>cd</code> in the project repo and run this command. If everything goes well you should see:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">Successfully built 2939406c7d5c
+Successfully tagged qemu_build:latest</code></pre></div>
+<p>The last line is really important, it means that we can refer to this docker image not only with its hash but with a human friendly name. Great!</p>
+
+<p>Now we can run the container and build QEMU.  While this could be done inside the dockerfile, I prefer to spawn an interactive shell, as it allows me to try different configurations and options without having to rebuild the container.</p>
+
+<p>An interactive shell is spawned like this:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">docker run -it -v <span class="s1">&#39;PATH-OF-YOUR-QEMU-REPO:/qemu&#39;</span> qemu_build</code></pre></div>
+<p>You should now have a root shell in the Ubuntu container. If your volume was mounted right you&rsquo;ll see a folder named <code>qemu</code>.  From there run the following commands:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">mkdir build
+<span class="nb">cd</span> build
+../configure --target-list<span class="o">=</span>arm-linux-user --static
+make -j5</code></pre></div>
+<p>The <code>--static</code> flag is needed if you want to run QEMU inside a chroot. This comes handy if you want to run dynamically linked executables. Later in the conclusion I&rsquo;ll spend some words about this scenario.</p>
+
+<h3 id="the-patch-test-program">The patch test program</h3>
+
+<p>I like test-driven development. The following is a brief discussion on how to test our patch to QEMU.</p>
+
+<p>There are two orders of problems which we&rsquo;ll tackle separately:</p>
+
+<ol>
+<li>We are dealing with ioctl, which by definitions means we are dealing with some hardware. Unfortunately most laptops don&rsquo;t come with flash memory for you to play with. This can be solved by installing a kernel-level nand simulator.<br /></li>
+<li>We need a test program that runs on both x86 and ARM, as we need to make sure that results are consistent between the two architectures. After all QEMU justs passes the guest ioctl down to the system, so running the same call with and without QEMU should spot any errors in our Chinese Whispers game.<br />
+<br /></li>
+</ol>
+
+<h4 id="introducing-you-to-nandsim">Introducing you to nandsim</h4>
+
+<p>The folks that maintain linux mtd also provide a handy kernel level simulator. My system came with the kernel module already compiled, so I just had to run:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">sudo modprobe nandsim <span class="nv">first_id_byte</span><span class="o">=</span>0x20 <span class="nv">second_id_byte</span><span class="o">=</span>0xaa <span class="nv">third_id_byte</span><span class="o">=</span>0x00 <span class="nv">fourth_id_byte</span><span class="o">=</span>0x15</code></pre></div>
+<p>And just by magic I had <code>/dev/mtd0</code> appearing.<br />
+If your system doesn&rsquo;t come with this module, you will have to compile it from scratch. It appears to me that most systems come with this already installed so it shouldn&rsquo;t be too big of an issue.</p>
+
+<p>If you run file against <code>/dev/mtd0</code> you&rsquo;ll see that&rsquo;s exactly what we talked before.</p>
+
+<pre><code>➜  file /dev/mtd0 
+/dev/mtd0: character special (90/0)
+</code></pre>
+
+<p>Yay, we are finally getting closer.</p>
+
+<h4 id="test-c">test.c</h4>
+
+<p>The solution to problem number 2 in the list is simple. Write a test program that can be compiled in both architectures. The program and the makefiles are in the project repo. Here follows a breif discussion about several key aspects. Knowing these can help you a lot while reverse engineering, as a map can help you in a hike.</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/ioctl.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;mtd/mtd-user.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span><span class="cp"></span> 
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">mtd_info_t</span> <span class="n">mtd_info</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;/dev/mtd1&#34;</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="p">);</span>
+	<span class="kt">int</span> <span class="n">ioctl_return</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+	<span class="n">ioctl_return</span> <span class="o">=</span> <span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">MEMGETINFO</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mtd_info</span><span class="p">);</span>
+	
+	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;IOCTL return %i</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">ioctl_return</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">ioctl_return</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;IOCTL errno %i</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">errno</span><span class="p">);</span>
+		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD type: %u</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">type</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD total size : %u bytes</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD erase size : %u bytes</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">erasesize</span><span class="p">);</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD write size : %u bytes</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">writesize</span><span class="p">);</span>
+ 
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+<p>We will look at several key aspects, revolving around the ioctl call.</p>
+
+<p>The first parameter is the mtd character device. We could have open this file with <code>O_NONBLOCK</code> but the system that led to this research wasn&rsquo;t, so I preferred to stick with the original.</p>
+
+<p>The second parameter is a define. It&rsquo;s defined  <a href="https://elixir.bootlin.com/linux/latest/source/include/uapi/mtd/mtd-abi.h#L158">here</a>, and as you can see it&rsquo;s a macro which at the end will return a number starting from type of operation that is performed and the data structure that ioctl expects. If you recall, at the beginning we our error message was <code>Unsupported ioctl: cmd=0xffffffff80204d01</code>. That number after cmd is MEMGETINFO. You can easily verify that this is actually true by running the following code:</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;linux/types.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;linux/ioctl.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="k">struct</span> <span class="n">mtd_info_user</span> <span class="p">{</span>
+	<span class="n">__u8</span> <span class="n">type</span><span class="p">;</span>
+	<span class="n">__u32</span> <span class="n">flags</span><span class="p">;</span>
+	<span class="n">__u32</span> <span class="n">size</span><span class="p">;</span>	<span class="cm">/* Total size of the MTD */</span>
+	<span class="n">__u32</span> <span class="n">erasesize</span><span class="p">;</span>
+	<span class="n">__u32</span> <span class="n">writesize</span><span class="p">;</span>
+	<span class="n">__u32</span> <span class="n">oobsize</span><span class="p">;</span>	<span class="cm">/* Amount of OOB data per block (e.g. 16) */</span>
+	<span class="n">__u64</span> <span class="n">padding</span><span class="p">;</span>	<span class="cm">/* Old obsolete field; do not use */</span>
+<span class="p">};</span>
+
+<span class="cp">#define MEMGETINFO		_IOR(&#39;M&#39;, 1, struct mtd_info_user)
+</span><span class="cp"></span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(){</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%x&#34;</span><span class="p">,</span> <span class="n">MEMGETINFO</span><span class="p">);</span>
+<span class="p">}</span></code></pre></div>
+<p>Which will output:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">➜  ./memgetinfo_x64
+80204d01                   </code></pre></div>
+<p>Bingo, we know know for sure that this is the right ioctl that&rsquo;s failing.</p>
+
+<p>If you&rsquo;re asking where these struct come from, <a href="https://elixir.bootlin.com/linux/latest/source/include/uapi/mtd/mtd-abi.h#L127">it&rsquo;s from the kernel</a>, of course.<br />
+A note on this. Yes, you can copy and paste bit and pieces of code from big projects and files to isolate and test your understanding of the system as a whole. You need to be very careful as you might actually get wrong what to copy from where. Even considering this problem, I find that this is the best way to test my understanding of complex code. Copy what you think is the minimum amount of code to get that feature working, mock the rest and compile it. If it works challenge your understanding by breaking it. If it doesn&rsquo;t, well, get it to work.</p>
+
+<p>We now got a system to compile QEMU, via docker, and a test program to compare results of the ioctl between the bare system and the QEMU emulated one. In the next section we will finally start putting our hands on QEMU to add this missing syscall.</p>
 <ul class="pa0">
   
 </ul>
@@ -140,7 +367,7 @@ Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&r
     </main>
     <footer class="bg-moon-gray bottom-0 w-100 pa3" role="contentinfo">
   <div class="flex justify-between">
-  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://carlo.marag.no" >
+  <a class="f4 fw4 hover-mid-gray dark-gray no-underline dn dib-ns pv2 ph3" href="https://carlo.marag.no" >
     &copy; 2019 Carlo Maragno
   </a>
     <div>
@@ -181,5 +408,9 @@ Luckly for us, it exists a program, called QEMU that can do just that. QEMU it&r
   <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
 
 
+    
+    
+      <script src="/asciinema-player.js"></script>
+    
   </body>
 </html>
