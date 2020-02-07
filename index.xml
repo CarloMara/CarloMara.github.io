@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Carlo Maragno</title>
@@ -6,10 +6,22 @@
     <description>Recent content on Carlo Maragno</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 May 2019 21:38:00 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 24 Dec 2019 14:30:20 +0100</lastBuildDate>
     
 	<atom:link href="https://carlo.marag.no/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Epson Printer Reversing</title>
+      <link>https://carlo.marag.no/posts/epson-printer-reversing/</link>
+      <pubDate>Tue, 24 Dec 2019 14:30:20 +0100</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/epson-printer-reversing/</guid>
+      <description>Why Don&#39;t be my parents. I like printers. There&#39;s nothing bad about it.
+Extraction At first glance two big section are used. They both start with CROM.
+  Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
+ Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon.</description>
+    </item>
     
     <item>
       <title>Add Custom IOCTL to QEMU</title>
@@ -17,10 +29,8 @@
       <pubDate>Mon, 06 May 2019 21:38:00 +0200</pubDate>
       
       <guid>https://carlo.marag.no/posts/add-custom-ioctls-qemu/</guid>
-      <description>Introduction In this post I&amp;rsquo;ll try to explain how to add unsupported system calls to QEMU user.
-The first part will give a bit of high-level context, as to answer the question why are you doing this?
-The second part will be about the system call that was missing and that will be implemented.
-The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.</description>
+      <description>Introduction In this post I&#39;ll try to explain how to add unsupported system calls to QEMU user.
+The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.</description>
     </item>
     
     <item>
@@ -29,7 +39,7 @@ The third part will be about toolchains and development environments, or more sp
       <pubDate>Mon, 06 May 2019 17:42:08 +0200</pubDate>
       
       <guid>https://carlo.marag.no/posts/intentio/</guid>
-      <description>Of this space It&amp;rsquo;s to document my ride in the word of modern teconologies.</description>
+      <description>Of this space It&#39;s to document my ride in the word of modern teconologies.</description>
     </item>
     
   </channel>
