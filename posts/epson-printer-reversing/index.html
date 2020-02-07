@@ -14,7 +14,7 @@
     <meta name="generator" content="Hugo 0.62.0" />
     
     
-      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+      <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
     
 
     
@@ -57,9 +57,22 @@ Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon."/>
 
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-157999160-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
   </head>
 
-  <body class="ma0 avenir bg-near-white">
+  <body class="ma0 avenir bg-near-white production">
 
     
    
