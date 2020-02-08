@@ -6,10 +6,21 @@
     <description>Recent content in Posts on Carlo Maragno</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 24 Dec 2019 14:30:20 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 07 Feb 2020 15:54:12 +0100</lastBuildDate>
     
 	<atom:link href="https://carlo.marag.no/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Epson Printer Deamon under QEMU</title>
+      <link>https://carlo.marag.no/posts/epson-printer-deamon/</link>
+      <pubDate>Fri, 07 Feb 2020 15:54:12 +0100</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/epson-printer-deamon/</guid>
+      <description>Why Because it&#39;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
+ Running a non static binary complied for arm that doesn&#39;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.</description>
+    </item>
     
     <item>
       <title>Epson Printer Reversing</title>
