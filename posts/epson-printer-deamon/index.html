@@ -184,7 +184,7 @@ drwxrwxr-x    3 carlo carlo 4,0K 12. Jan 16:27 utils
 <li>Run <code>make menuconfig</code>. For our case we need a ARM based filesystem, so under <code>Target Options-&gt;Target Architecture</code> we'll select <code>ARM little endian</code>. Libc selection happens under <code>Toolchain-&gt;C Library</code>. We can also ask buildroot to create a development system for our give configuration. This will take some time, but will be super helpful later. This last step is simply a matter of selecting every tool we like to use under <code>Target Packages</code></li>
 <li>Wait. Even if your computer is fast this will take a while. With my big machine it usually takes around 1.5 hours, while on the ultrabook it takes easily 4.</li>
 </ol>
-<h1 id="choot-in-the-new-file-system">Choot in the new file system</h1>
+<h1 id="chroot-in-the-new-file-system">Chroot in the new file system</h1>
 <p>If you made so far we are now ready to run <code>nwsoc</code>. We just have to chroot into the filesystem buildroot has just created, which can be found <code>buildroot-2019.02.8/output/</code>. In this folder there're quite a few things:</p>
 <pre><code>➜  output ll
 total 20K
