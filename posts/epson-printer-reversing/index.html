@@ -8,10 +8,10 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    
 
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.62.0" />
+    <meta name="generator" content="Hugo 0.66.0" />
     
     
       <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
@@ -19,9 +19,11 @@
 
     
     
-      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
     
-
+    
+    
+      <link rel="stylesheet" href="/static/syntax.css">
     
 
     
@@ -31,7 +33,7 @@
     
     
     <meta property="og:title" content="Epson Printer Reversing" />
-<meta property="og:description" content="Why Don&#39;t be my parents. I like printers. There&#39;s nothing bad about it.
+<meta property="og:description" content="Why Don&rsquo;t be my parents. I like printers. There&rsquo;s nothing bad about it.
 Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon." />
@@ -40,7 +42,7 @@ Extraction At first glance two big section are used. They both start with CROM.
 <meta property="article:published_time" content="2019-12-24T14:30:20+01:00" />
 <meta property="article:modified_time" content="2019-12-24T14:30:20+01:00" />
 <meta itemprop="name" content="Epson Printer Reversing">
-<meta itemprop="description" content="Why Don&#39;t be my parents. I like printers. There&#39;s nothing bad about it.
+<meta itemprop="description" content="Why Don&rsquo;t be my parents. I like printers. There&rsquo;s nothing bad about it.
 Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon.">
@@ -52,7 +54,7 @@ Extraction At first glance two big section are used. They both start with CROM.
 
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Epson Printer Reversing"/>
-<meta name="twitter:description" content="Why Don&#39;t be my parents. I like printers. There&#39;s nothing bad about it.
+<meta name="twitter:description" content="Why Don&rsquo;t be my parents. I like printers. There&rsquo;s nothing bad about it.
 Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon."/>
@@ -127,7 +129,7 @@ if (!doNotTrack) {
     </header>
 
     <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="why">Why</h1>
-<p>Don't be my parents. I like printers. There's nothing bad about it.</p>
+<p>Don&rsquo;t be my parents. I like printers. There&rsquo;s nothing bad about it.</p>
 <h1 id="extraction">Extraction</h1>
 <p>At first glance two big section are used. They both start with <code>CROM</code>.</p>
 <ol>
@@ -149,7 +151,7 @@ if (!doNotTrack) {
 <p><img src="/static/epson-printer-reversing/broken_img_header.png" alt="broken_img_header.png"></p>
 </li>
 <li>
-<p>Most likely it's the gui part of the printer, but it's broken. Will study a bit more to understand how to unpack it.</p>
+<p>Most likely it&rsquo;s the gui part of the printer, but it&rsquo;s broken. Will study a bit more to understand how to unpack it.</p>
 </li>
 </ol>
 </li>

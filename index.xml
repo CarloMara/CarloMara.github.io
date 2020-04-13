@@ -6,10 +6,19 @@
     <description>Recent content on Carlo Maragno</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 07 Feb 2020 15:54:12 +0100</lastBuildDate>
+    <lastBuildDate>Sat, 11 Apr 2020 16:41:37 +0100</lastBuildDate>
     
 	<atom:link href="https://carlo.marag.no/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>QEMU IOCTL Hooks</title>
+      <link>https://carlo.marag.no/posts/qemu-ioctl-hooks/</link>
+      <pubDate>Sat, 11 Apr 2020 16:41:37 +0100</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/qemu-ioctl-hooks/</guid>
+      <description>Introduction In the last post, we saw that nwsoc was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need nwsoc because it has some network interfaces exposed, but we can&amp;rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels).</description>
+    </item>
     
     <item>
       <title>Epson Printer Deamon under QEMU</title>
@@ -17,9 +26,9 @@
       <pubDate>Fri, 07 Feb 2020 15:54:12 +0100</pubDate>
       
       <guid>https://carlo.marag.no/posts/epson-printer-deamon/</guid>
-      <description>Why Because it&#39;s fun and because I believe in the motto hack dumb shit
-What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
- Running a non static binary complied for arm that doesn&#39;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.</description>
+      <description>Why Because it&amp;rsquo;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain without it&amp;rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:
+ Running a dynamic binary complied for Arm that doesn&amp;rsquo;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.</description>
     </item>
     
     <item>
@@ -28,7 +37,7 @@ What In the last post I mentioned that most nwsoc dies in pain if the right kern
       <pubDate>Tue, 24 Dec 2019 14:30:20 +0100</pubDate>
       
       <guid>https://carlo.marag.no/posts/epson-printer-reversing/</guid>
-      <description>Why Don&#39;t be my parents. I like printers. There&#39;s nothing bad about it.
+      <description>Why Don&amp;rsquo;t be my parents. I like printers. There&amp;rsquo;s nothing bad about it.
 Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon.</description>
@@ -40,7 +49,7 @@ Extraction At first glance two big section are used. They both start with CROM.
       <pubDate>Mon, 06 May 2019 21:38:00 +0200</pubDate>
       
       <guid>https://carlo.marag.no/posts/add-custom-ioctls-qemu/</guid>
-      <description>Introduction In this post I&#39;ll try to explain how to add unsupported system calls to QEMU user.
+      <description>Introduction In this post I&amp;rsquo;ll try to explain how to add unsupported system calls to QEMU user.
 The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.</description>
     </item>
     
@@ -50,7 +59,7 @@ The first part will give a bit of high level context, as to answer the question 
       <pubDate>Mon, 06 May 2019 17:42:08 +0200</pubDate>
       
       <guid>https://carlo.marag.no/posts/intentio/</guid>
-      <description>Of this space It&#39;s to document my ride in the word of modern teconologies.</description>
+      <description>Of this space It&amp;rsquo;s to document my ride in the word of modern teconologies.</description>
     </item>
     
   </channel>

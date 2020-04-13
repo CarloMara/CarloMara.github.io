@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Carlo Maragno  | QEMU IOCTL Hooks</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.66.0" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
+    
+    
+    
+      <link rel="stylesheet" href="/static/syntax.css">
+    
+
+    
+      
+    
+
+    
+    
+    <meta property="og:title" content="QEMU IOCTL Hooks" />
+<meta property="og:description" content="Introduction In the last post, we saw that nwsoc was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need nwsoc because it has some network interfaces exposed, but we can&rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://carlo.marag.no/posts/qemu-ioctl-hooks/" />
+<meta property="article:published_time" content="2020-04-11T16:41:37+01:00" />
+<meta property="article:modified_time" content="2020-04-11T16:41:37+01:00" />
+<meta itemprop="name" content="QEMU IOCTL Hooks">
+<meta itemprop="description" content="Introduction In the last post, we saw that nwsoc was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need nwsoc because it has some network interfaces exposed, but we can&rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels).">
+<meta itemprop="datePublished" content="2020-04-11T16:41:37&#43;01:00" />
+<meta itemprop="dateModified" content="2020-04-11T16:41:37&#43;01:00" />
+<meta itemprop="wordCount" content="1081">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="QEMU IOCTL Hooks"/>
+<meta name="twitter:description" content="Introduction In the last post, we saw that nwsoc was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need nwsoc because it has some network interfaces exposed, but we can&rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels)."/>
+
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-157999160-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+  </head>
+
+  <body class="ma0 sans-serif production">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-moon-gray">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="https://carlo.marag.no" class="f3 fw2 hover-white no-underline white-90 dib">
+      <i class="fas fa-home"></i>
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/posts/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+        </ul>
+      
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw9 center ph3">
+
+    <header class="mt4 w-100">
+      <p class="f6 b helvetica tracked">
+          
+        POSTS
+      </p>
+      <h1 class="f1 athelas mb1">QEMU IOCTL Hooks</h1>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-04-11T16:41:37&#43;01:00">April 11, 2020</time>
+      
+      
+    </header>
+
+    <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="introduction">Introduction</h1>
+<p>In the last post, we saw that <code>nwsoc</code> was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need <code>nwsoc</code> because it has some network interfaces exposed, but we can&rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels). By hooking IOCTLs, we can provide the same data that the kernel module would.</p>
+<p>I want to focus on adding IOCTLs to QEMU. To do this, I have divided the topic into four steps:</p>
+<ol>
+<li>Using <code>nandsim</code> to create a virtual mtd device. We can issue IOCTLs created by the module;</li>
+<li>Build a simple program that uses this IOCTL. This program works on our guest system, but fails in qemu;</li>
+<li>Patch QEMU. The demo program now runs without any issue;</li>
+<li>Hook the IOCTL. Feed arbitrary data to the program.</li>
+</ol>
+<p><code>nandsim</code> seems to be the perfect candidate for this demo, as it&rsquo;s a good compromise between setup simplicity and real-world applicability. Many embedded updaters take direct control of the flash memory, and this subsystem is not too complicated to be a burden for the scope of the post. I wanted to use <code>nwsoc</code>, but there is too much reverse engineering effort, and I wanted to keep the post concise.</p>
+<h2 id="1---nandsim">1 - Nandsim</h2>
+<p><a href="http://www.linux-mtd.infradead.org/faq/nand.html">Here</a> is the documentation about nand devices in Linux. We are interested in the very last part, the nand simulator.</p>
+<p><code>modprobe nandsim first_id_byte=0x20 second_id_byte=0x78</code></p>
+<p>This command will create a virtual 128MiB device. Remember that this memory is allocated, and will remain so until we unload the module.</p>
+<h2 id="2---simple-test-program">2 - Simple Test Program</h2>
+<p>Ok, now we have a new device, it should be <code>/dev/mtd0</code>. Just make sure you&rsquo;re not touching something important, especially if you&rsquo;re using a Chromebook.</p>
+<p>Now, we need some code. Below is an example of a simple program that issues an IOCTL. Most programs you&rsquo;re likely to encounter are more complicated, but this does the job for our QEMU project.</p>
+<p>This code is pretty simple:</p>
+<ol>
+<li>Allocate space for <code>mtd_info_t struct</code> on the stack</li>
+<li>Open a file descriptor to the virtual MTD device</li>
+<li>Issue an IOCTL asking for info about the memory</li>
+<li>Print some stuff back</li>
+</ol>
+<p>The rest is just error handling code.</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/ioctl.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;mtd/mtd-user.h&gt;</span><span class="cp">
+</span><span class="cp"></span> 
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[]){</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">getuid</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Not run as root!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;This program will likely fail!</span><span class="se">\n\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Trying to open %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+
+    <span class="n">mtd_info_t</span> <span class="n">mtd_info</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">O_RDWR</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&amp;</span> <span class="n">errno</span> <span class="o">==</span> <span class="n">EACCES</span><span class="p">){</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Wrong permission for device</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Check filename or run as root</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="n">rc</span> <span class="o">=</span> <span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">MEMGETINFO</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mtd_info</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Something went wrong with the IOCTL.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD total size : %u bytes</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;MTD erase size : %u bytes</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mtd_info</span><span class="p">.</span><span class="n">erasesize</span><span class="p">);</span>
+ 
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div><p>We can compile it with <code>gcc dump_info.c -o dump_info</code> and run it. If you have done everything right, you should get something like this:</p>
+<pre><code>➜ sudo ./dump_info &quot;/dev/mtd0&quot;
+Trying to open /dev/mtd0
+MTD total size : 134217728 bytes
+MTD erase size : 16384 bytes
+</code></pre><p>No, you&rsquo;re not alone. The first time I saw that command, I questioned my math. As it turns out, 134217728 bytes is exactly 128 MebiByte, better known as 128MiB.</p>
+<p>If we run this in QUEMU, everything breaks. Look:</p>
+<pre><code>➜ sudo qemu-x86_64 dump_info /dev/mtd0
+Trying to open /dev/mtd0
+Unsupported ioctl: cmd=0xffffffff80204d01
+Something went wrong with the IOCTL.
+</code></pre><p>𝓈𝒶𝒹, but we&rsquo;re here to fix it.</p>
+<h1 id="3---patching-qemu">3 - Patching QEMU</h1>
+<p>To go ahead, you need a working QEMU build environment. Doing this on arch is a nightmare, but a simple docker ubuntu container can help. You can find this docker container in the git repo for this post. I usually mount the qemu source folder as a volume and use docker to build. YMMV.</p>
+<p>Adding support for an IOCTL that is also supported by your host system is failry easy:</p>
+<ol>
+<li>We need to register a new <code>IOCTL</code> in <code>ioctl.h</code>
+<code>IOCTL(MEMGETINFO, IOC_R, MK_PTR(MK_STRUCT(STRUCT_mtd_info_user)))</code></li>
+<li>We need to register a new target in <code>syscall_defs.h</code>
+<code>#define TARGET_MEMGETINFO             TARGET_IOR('M', 1, struct mtd_info_user)</code></li>
+<li>We need to define a new data type, in this case a struct, in <code>syscall_types.h</code></li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="n">STRUCT</span><span class="p">(</span><span class="n">mtd_info_user</span><span class="p">,</span>
+       <span class="n">TYPE_CHAR</span><span class="p">,</span>
+       <span class="n">TYPE_INT</span><span class="p">,</span>
+       <span class="n">TYPE_INT</span><span class="p">,</span>
+       <span class="n">TYPE_INT</span><span class="p">,</span>
+       <span class="n">TYPE_INT</span><span class="p">,</span>
+       <span class="n">TYPE_INT</span><span class="p">,</span>
+       <span class="n">TYPE_LONG</span>
+<span class="p">)</span>
+</code></pre></div><ol start="4">
+<li>Because we used <code>mtd_info_user</code> in the 2nd step, we have to add <code>#include &lt;mtd/mtd-user.h&gt;</code> in <code>syscall.c</code>, otherwise the build will fail</li>
+</ol>
+<p>Now we should be able to run our program inside QEMU without any crash:</p>
+<pre><code>➜  sudo qemu-x86_64 dump_info /dev/mtd0
+Trying to open /dev/mtd0
+MTD total size : 134217728 bytes
+MTD erase size : 16384 bytes
+</code></pre><h1 id="4---hooking-stuff">4 - Hooking Stuff</h1>
+<p>So far, we managed to add support for a new IOCTL.  Inside <code>do_ioctl</code>, there&rsquo;s all the logic that QEMU uses to forward IOCTLs to the host system. We insert a trap to prevent QEMU from sending a specific IOCTL to the host. This approach enables us to feed arbitrary data to the application that is running in the emulator.</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">case</span> <span class="nl">TYPE_PTR</span><span class="p">:</span>
+        <span class="n">arg_type</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">target_size</span> <span class="o">=</span> <span class="n">thunk_type_size</span><span class="p">(</span><span class="n">arg_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="k">switch</span><span class="p">(</span><span class="n">ie</span><span class="o">-&gt;</span><span class="n">access</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nl">IOC_R</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">cmd</span> <span class="o">==</span> <span class="mh">0xffffffff80204d01</span><span class="p">){</span>
+                <span class="n">gemu_log</span><span class="p">(</span><span class="s">&#34;MEMGETINFO Hook Trigger</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+                <span class="n">argptr</span> <span class="o">=</span> <span class="n">lock_user</span><span class="p">(</span><span class="n">VERIFY_WRITE</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">target_size</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="n">mtd_info_t</span> <span class="n">temp_info</span> <span class="o">=</span>  <span class="p">{</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="mi">31337</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">};</span>
+                <span class="n">thunk_convert</span><span class="p">(</span><span class="n">argptr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">temp_info</span><span class="p">,</span> <span class="n">arg_type</span><span class="p">,</span> <span class="n">THUNK_TARGET</span><span class="p">);</span>
+                <span class="n">unlock_user</span><span class="p">(</span><span class="n">argptr</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">target_size</span><span class="p">);</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">get_errno</span><span class="p">(</span><span class="n">safe_ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">ie</span><span class="o">-&gt;</span><span class="n">host_cmd</span><span class="p">,</span> <span class="n">buf_temp</span><span class="p">));</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">is_error</span><span class="p">(</span><span class="n">ret</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">argptr</span> <span class="o">=</span> <span class="n">lock_user</span><span class="p">(</span><span class="n">VERIFY_WRITE</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">target_size</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">argptr</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="o">-</span><span class="n">TARGET_EFAULT</span><span class="p">;</span>
+                
+                <span class="n">thunk_convert</span><span class="p">(</span><span class="n">argptr</span><span class="p">,</span> <span class="n">buf_temp</span><span class="p">,</span> <span class="n">arg_type</span><span class="p">,</span> <span class="n">THUNK_TARGET</span><span class="p">);</span>
+                <span class="n">unlock_user</span><span class="p">(</span><span class="n">argptr</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">target_size</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">break</span><span class="p">;</span>
+</code></pre></div><p>We can use this method for different tasks. For instance, because QEMU is no longer redirecting IOCTLs to the host, the guest application no longer needs a special file to run.
+Since we control the data that the guest application receives, potentially, we can mock a full kernel module inside QEMU.</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="err">➜</span>  <span class="n">sudo</span> <span class="n">qemu</span><span class="o">-</span><span class="n">x86_64</span> <span class="n">dump_info</span> <span class="n">not_mtd_device</span> 
+<span class="n">Trying</span> <span class="n">to</span> <span class="n">open</span> <span class="n">not_mtd_device</span>
+<span class="n">MEMGETINFO</span> <span class="n">Hook</span> <span class="n">Trigger</span>
+<span class="n">MTD</span> <span class="n">total</span> <span class="nl">size</span> <span class="p">:</span> <span class="mi">31337</span> <span class="n">bytes</span>
+<span class="n">MTD</span> <span class="n">erase</span> <span class="nl">size</span> <span class="p">:</span> <span class="mi">16</span> <span class="n">bytes</span>
+</code></pre></div><p>As you can see, the program works without any issues. We successfully hooked the IOCTL, and we can feed the program arbitrary data.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>I really want to thank <a href="https://twitter.com/anbiondo">Andrea</a> and <a href="https://twitter.com/pmontesel">Paolo</a> for helping me write this post.</p>
+<p>I also want to point out that what I described is a naive implementation. For instance, to emulate a kernel module, you need to add several other components, mostly to do state keeping. Also, keep in mind that in in the case of <code>nwsoc</code> I had to reverse engineer most of the functionality so it&rsquo;s not a fast process.</p>
+<p>I hope you found this useful. The code is on <a href="https://github.com/CarloMara/qemu-ioctl-hooks">Github</a>!</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6">
+      
+      
+      </div>
+    </section>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-moon-gray bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://carlo.marag.no" >
+    &copy;  Carlo Maragno 2020 
+  </a>
+    <div>
+
+
+
+<a href="https://twitter.com/CarloMara1" target="_blank" class="link-transition twitter link dib z-999 pt3 pt0-l mr1" title="Twitter link" rel="noopener" aria-label="follow on Twitter——Opens in a new window">
+  <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+<a href="https://github.com/CarloMara" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>

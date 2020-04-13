@@ -8,10 +8,10 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    
 
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.62.0" />
+    <meta name="generator" content="Hugo 0.66.0" />
     
     
       <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
@@ -19,9 +19,11 @@
 
     
     
-      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
     
-
+    
+    
+      <link rel="stylesheet" href="/static/syntax.css">
     
 
     
@@ -31,24 +33,24 @@
     
     
     <meta property="og:title" content="Add Custom IOCTL to QEMU" />
-<meta property="og:description" content="Introduction In this post I&#39;ll try to explain how to add unsupported system calls to QEMU user.
+<meta property="og:description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
 The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://carlo.marag.no/posts/add-custom-ioctls-qemu/" />
 <meta property="article:published_time" content="2019-05-06T21:38:00+02:00" />
 <meta property="article:modified_time" content="2019-05-06T21:38:00+02:00" />
 <meta itemprop="name" content="Add Custom IOCTL to QEMU">
-<meta itemprop="description" content="Introduction In this post I&#39;ll try to explain how to add unsupported system calls to QEMU user.
+<meta itemprop="description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
 The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.">
 <meta itemprop="datePublished" content="2019-05-06T21:38:00&#43;02:00" />
 <meta itemprop="dateModified" content="2019-05-06T21:38:00&#43;02:00" />
-<meta itemprop="wordCount" content="1312">
+<meta itemprop="wordCount" content="1335">
 
 
 
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Add Custom IOCTL to QEMU"/>
-<meta name="twitter:description" content="Introduction In this post I&#39;ll try to explain how to add unsupported system calls to QEMU user.
+<meta name="twitter:description" content="Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
 The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU."/>
 
       
@@ -121,21 +123,21 @@ if (!doNotTrack) {
     </header>
 
     <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="introduction">Introduction</h1>
-<p>In this post I'll try to explain how to add unsupported system calls to QEMU user.</p>
+<p>In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.</p>
 <p>The first part will give a bit of high level context, as to answer the question <em>why are you doing this?</em>
 The second part will be about the system call that was missing and that will be implemented.
 The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.
 Than will follow some closing remarks and personal reflections.</p>
 <h1 id="a-bit-of-context">A bit of context</h1>
-<p>You're reversing some kind of embedded ARM device update. You are doing fine with static analysis, but at some point you stumble across some very messy code. It does very wired things with some strange segments. Analyzing this by hand is usually painful and very time consuming, as you have to figure both the compression/encryption algorithms and the location of the data inside the update file.</p>
-<p>A faster approach for solving this problem is running the update and let it perform it's job.
+<p>You&rsquo;re reversing some kind of embedded ARM device update. You are doing fine with static analysis, but at some point you stumble across some very messy code. It does very wired things with some strange segments. Analyzing this by hand is usually painful and very time consuming, as you have to figure both the compression/encryption algorithms and the location of the data inside the update file.</p>
+<p>A faster approach for solving this problem is running the update and let it perform it&rsquo;s job.
 This can be done in two ways:</p>
 <ol>
-<li>Running the binary on instrumented hardware. Sometimes, if you're lucky, it's possible to dump the updated flash content. Unfortunately, this is a rare case, as most devices encrypt the flash. We're not getting into this scenario, as it's out of scope. Just know this is a very big can of worms.</li>
-<li>Running the binary inside emulated hardware. Most of the times this is the best bet, especially if the hardware is running known uC or inside a Linux system. In the first case, common with ARM uC, you'll end up writing a custom loader which will help executing the program in QEMU user. In the second case, you can just use QEMU user.</li>
+<li>Running the binary on instrumented hardware. Sometimes, if you&rsquo;re lucky, it&rsquo;s possible to dump the updated flash content. Unfortunately, this is a rare case, as most devices encrypt the flash. We&rsquo;re not getting into this scenario, as it&rsquo;s out of scope. Just know this is a very big can of worms.</li>
+<li>Running the binary inside emulated hardware. Most of the times this is the best bet, especially if the hardware is running known uC or inside a Linux system. In the first case, common with ARM uC, you&rsquo;ll end up writing a custom loader which will help executing the program in QEMU user. In the second case, you can just use QEMU user.</li>
 </ol>
-<p>Let's suppose that we decided against option one, as the hardware it's not available. After some brief analysis we figured that the update is supposed to run inside a Linux based machine.</p>
-<p>The next step is doing some reverse engineering to figure out things like command line parameters or environmental variables. Usually at this point you'll end up with a prompt like this:</p>
+<p>Let&rsquo;s suppose that we decided against option one, as the hardware it&rsquo;s not available. After some brief analysis we figured that the update is supposed to run inside a Linux based machine.</p>
+<p>The next step is doing some reverse engineering to figure out things like command line parameters or environmental variables. Usually at this point you&rsquo;ll end up with a prompt like this:</p>
 <p>
     <asciinema-player
         src="/casts/257214.cast"
@@ -160,37 +162,39 @@ This can be done in two ways:</p>
 <p>Please keep in mind that the reminder of the post will be about flash memory ioctl. I decided to go with this specific topic for several reasons, first and foremost because I believe in explanation by example. Clear and compelling examples are often better than lengthy theoretical discussion.
 Flash memory ioctls are a compelling example because Linux can emulate flash memories, which lets you try the following even without custom hardware.
 Another reason is that the whole memory subsystem is very small, which makes this a very interesting exercise if you  want to learn how to navigate Linux codebase. This is an essential skill if you want to add unsupported syscalls to qemu.</p>
-<p>Honestly, there's also the fact that I actually had to implement this, so I had most of the stuff ready.</p>
+<p>Honestly, there&rsquo;s also the fact that I actually had to implement this, so I had most of the stuff ready.</p>
 <h2 id="syscalls-ioctl-mtd-and-friends">Syscalls, IOCTL, MTD and friends</h2>
 <p>Recall the snippet above, what did the error message mean?</p>
 <p><code>Unsupported ioctl: cmd=0xffffffff80204d01</code></p>
 <p>To better understand this message we need to digress a bit into syscalls and ioctl.</p>
 <h3 id="syscalls">syscalls</h3>
 <p>Syscalls issue commands to the kernel. Syscalls are needed because not every resource can be accessed directly.
-A simple example is reading the content of a file. Every programmers knows that to read a file you first call open, which will return a file descriptor, followed by a read, which hopefully will return your data. The kernel takes the burden of understanding which file you want and where it's data is. It will perform these tasks with the help of a filesystem, which in most cases will be ext4.
-Syscalls are cool, with them you don't need to worry about filesystems, disks or permission. If you can do it, the kernel will help you do it. If you can't your syscall will fail. As simple as that.</p>
-<p>Unfortunately, it's not so simple. The concept of a file as a container of information is really handy, because it lends very well both to the idea of user created data and to the idea of device data.</p>
+A simple example is reading the content of a file. Every programmers knows that to read a file you first call open, which will return a file descriptor, followed by a read, which hopefully will return your data. The kernel takes the burden of understanding which file you want and where it&rsquo;s data is. It will perform these tasks with the help of a filesystem, which in most cases will be ext4.
+Syscalls are cool, with them you don&rsquo;t need to worry about filesystems, disks or permission. If you can do it, the kernel will help you do it. If you can&rsquo;t your syscall will fail. As simple as that.</p>
+<p>Unfortunately, it&rsquo;s not so simple. The concept of a file as a container of information is really handy, because it lends very well both to the idea of user created data and to the idea of device data.</p>
 <p>Want to store some cat pictures? Store them in a file.
 Want to store the current configuration your flash memory? Well, a file also works well for that.
-If you heard the saying that in Linux <em>everything is a file</em> this is what it means. A file it's just a concept for unique data container.</p>
+If you heard the saying that in Linux <em>everything is a file</em> this is what it means. A file it&rsquo;s just a concept for unique data container.</p>
 <p>This unfortunately complicates things quite a bit, because we need to distinguish between files that are used to store data and files that are used to store state of hardware devices.
 While the kernel tries to minimize the difference between normal files and device files, for some operations, mainly direct interaction with hardware, the distinction is so big that a new systemcall is needed.</p>
 <h3 id="ioctl">ioctl</h3>
 <p>This is the new magic syscall that asks the kernel to control device specific functions.
 According to Wikipedia a good example of ioctl is CD-ROM disk ejection, as a ioctl is issued to the CD-ROM kernel module which then triggers the right sequence of commands to open the tray.</p>
 <p>Want to issue a specific command to a hardware device in your computer? Most of the times you will have to mess with ioctl. This is great, because with just one system call the kernel can address a wide variety of device commands, without complicating the general purpose interface. In comparison, Windows has a very different approach, where every device driver effectively creates new system calls. <em>very messy. so uncool.</em></p>
-<p>This is very relevant to our hypothetical goal of reversing an embedded updater. We need to know about system calls and ioctl, because flash memory management has a interface based on ioctl which has not been implemented in QEMU, thus the error above. In the next paragraph I'll discuss briefly about the MTD subsystem.</p>
+<p>This is very relevant to our hypothetical goal of reversing an embedded updater. We need to know about system calls and ioctl, because flash memory management has a interface based on ioctl which has not been implemented in QEMU, thus the error above. In the next paragraph I&rsquo;ll discuss briefly about the MTD subsystem.</p>
 <h3 id="mtd">MTD</h3>
 <p>Most embedded systems will need a low power low cost data storage solution. Even small mechanical HD are way to expensive for most embedded applications. This used to be one of the limiting factors of embedded technologies, but thanks to the development of solid state based storage solutions this is no longer a problem. There are mainly two types of solid storage solutions. We will focus only on raw flash.</p>
 <p>Raw flash is handled in Linux via the Memory Technology Device, MTD for short, that decouples the flash chip driver from filesystems and other utilities, making both software independent form one another.</p>
 <p>Ioctl and MTD met at <code>/dev/mtdX</code> which is a character device managed by <code>mtdchar</code> (this is a concise way to refer to those special files meant for hardware handling that we discussed above) . It provides ioctls to manipulate and erase blocks in the underling flash memory.</p>
 <p>Please refer to <a href="https://bootlin.com/blog/managing-flash-storage-with-linux/">this blog post </a> by <a href="https://bootlin.com/blog/author/mike/">Michael Opdenacker</a> for more details regarding flash memories and Linux.</p>
 <h3 id="friends">Friends</h3>
-<p>So, as anticipated earlier, we now can fully understand QEMU's error message.</p>
+<p>So, as anticipated earlier, we now can fully understand QEMU&rsquo;s error message.</p>
 <p><code>Unsupported ioctl: cmd=0xffffffff80204d01</code></p>
-<p>As ioctl are meant to deal with specific hardware commands, QEMU doesn't implement all of them.
-But thankfully it's not to hard to add new ones in. In simple terms, QEMU maps ioctl from the guest to the host semi transparently via a set of macros. If the host system has a different endianess than the guest, you will need to create a helper function to translate the commands between the two systems, thus making the translation semi transparent.
-Another interesting case is when the host system doesn't have the required ioctl. This can happen with custom peripheral. In this case you will have to mock the required ioctl in qemu, as in cannot  be passed to the host system.</p>
+<p>As ioctl are meant to deal with specific hardware commands, QEMU doesn&rsquo;t implement all of them.
+But thankfully it&rsquo;s not to hard to add new ones in. In simple terms, QEMU maps ioctl from the guest to the host semi transparently via a set of macros. If the host system has a different endianess than the guest, you will need to create a helper function to translate the commands between the two systems, thus making the translation semi transparent.
+Another interesting case is when the host system doesn&rsquo;t have the required ioctl. This can happen with custom peripheral. In this case you will have to mock the required ioctl in qemu, as in cannot  be passed to the host system.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>This post is getting long, so instead of going forward I will tackle this problem in some feature posts. Stay tuned (:</p>
 <ul class="pa0">
   
 </ul>

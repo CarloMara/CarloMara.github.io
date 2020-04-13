@@ -8,10 +8,10 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    
 
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.62.0" />
+    <meta name="generator" content="Hugo 0.66.0" />
     
     
       <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
@@ -19,9 +19,11 @@
 
     
     
-      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
     
-
+    
+    
+      <link rel="stylesheet" href="/static/syntax.css">
     
 
     
@@ -39,7 +41,7 @@
 <meta property="og:description" content="This is what I&#39;m doing. Hope you find it interesting" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://carlo.marag.no/posts/" />
-<meta property="og:updated_time" content="2020-02-07T15:54:12+01:00" />
+<meta property="og:updated_time" content="2020-04-11T16:41:37+01:00" />
 <meta itemprop="name" content="Posts">
 <meta itemprop="description" content="This is what I&#39;m doing. Hope you find it interesting"><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Posts"/>
@@ -115,14 +117,29 @@ if (!doNotTrack) {
   <div class="bg-white mb3 pa4 gray overflow-hidden">
     <span class="f6 db">Posts</span>
     <h1 class="f3 near-black">
+      <a href="https://carlo.marag.no/posts/qemu-ioctl-hooks/" class="link black dim">
+        QEMU IOCTL Hooks
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      Introduction In the last post, we saw that nwsoc was dying in pain because it relied on some wired IOCTLs. If we were, hypothetically, developing an exploit to pwn the office printer (to print some sick memes, of course) now, we would have a problem. We need nwsoc because it has some network interfaces exposed, but we can&rsquo;t fuzz it because it relies on some data from the kernel (e.g., ink levels).
+    </div>
+  </div>
+</div>
+</div>
+      
+        <div class="mw9 center ph3 bg-white"><div class="relative w-100 mb4 bg-white nested-copy-line-height">
+  <div class="bg-white mb3 pa4 gray overflow-hidden">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
       <a href="https://carlo.marag.no/posts/epson-printer-deamon/" class="link black dim">
         Epson Printer Deamon under QEMU
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Why Because it's fun and because I believe in the motto hack dumb shit
-What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
- Running a non static binary complied for arm that doesn't use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.
+      Why Because it&rsquo;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain without it&rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:
+ Running a dynamic binary complied for Arm that doesn&rsquo;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.
     </div>
   </div>
 </div>
@@ -137,7 +154,7 @@ What In the last post I mentioned that most nwsoc dies in pain if the right kern
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Why Don't be my parents. I like printers. There's nothing bad about it.
+      Why Don&rsquo;t be my parents. I like printers. There&rsquo;s nothing bad about it.
 Extraction At first glance two big section are used. They both start with CROM.
   Contains uboot image, linux kernel and two sqashfs partition. Respectively one contains the rootfs, the other contains epson proprietary module and maybe a daemon.
  Early analysis suggest that the kernel calls /root/PreBoot . After initializing the system, /root/PreBoot calls S99NWControl S99NWControl seems to be the control script for the low level daemon.
@@ -155,7 +172,7 @@ Extraction At first glance two big section are used. They both start with CROM.
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Introduction In this post I'll try to explain how to add unsupported system calls to QEMU user.
+      Introduction In this post I&rsquo;ll try to explain how to add unsupported system calls to QEMU user.
 The first part will give a bit of high level context, as to answer the question why are you doing this? The second part will be about the system call that was missing and that will be implemented. The third part will be about toolchains and development environments, or more specifically how to setup an efficient workspace to experiment with QEMU.
     </div>
   </div>
@@ -171,7 +188,7 @@ The first part will give a bit of high level context, as to answer the question 
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Of this space It's to document my ride in the word of modern teconologies.
+      Of this space It&rsquo;s to document my ride in the word of modern teconologies.
     </div>
   </div>
 </div>
