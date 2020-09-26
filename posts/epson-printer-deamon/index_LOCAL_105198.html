@@ -8,10 +8,10 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
-    
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.74.3" />
+    <meta name="generator" content="Hugo 0.62.0" />
     
     
       <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
@@ -19,11 +19,9 @@
 
     
     
-      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
+      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
     
-    
-    
-      <link rel="stylesheet" href="/static/syntax.css">
+
     
 
     
@@ -33,29 +31,28 @@
     
     
     <meta property="og:title" content="Epson Printer Deamon under QEMU" />
-<meta property="og:description" content="Why Because it&rsquo;s fun and because I believe in the motto hack dumb shit
-What In the last post I mentioned that most nwsoc dies in pain without it&rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:
- Running a dynamic binary complied for Arm that doesn&rsquo;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex." />
+<meta property="og:description" content="Why Because it&#39;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
+ Running a non static binary complied for arm that doesn&#39;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://carlo.marag.no/posts/epson-printer-deamon/" />
 <meta property="article:published_time" content="2020-02-07T15:54:12+01:00" />
 <meta property="article:modified_time" content="2020-02-07T15:54:12+01:00" />
 <meta itemprop="name" content="Epson Printer Deamon under QEMU">
-<meta itemprop="description" content="Why Because it&rsquo;s fun and because I believe in the motto hack dumb shit
-What In the last post I mentioned that most nwsoc dies in pain without it&rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:
- Running a dynamic binary complied for Arm that doesn&rsquo;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.">
-<meta itemprop="datePublished" content="2020-02-07T15:54:12+01:00" />
-<meta itemprop="dateModified" content="2020-02-07T15:54:12+01:00" />
-<meta itemprop="wordCount" content="1427">
+<meta itemprop="description" content="Why Because it&#39;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
+ Running a non static binary complied for arm that doesn&#39;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex.">
+<meta itemprop="datePublished" content="2020-02-07T15:54:12&#43;01:00" />
+<meta itemprop="dateModified" content="2020-02-07T15:54:12&#43;01:00" />
+<meta itemprop="wordCount" content="1448">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Epson Printer Deamon under QEMU"/>
-<meta name="twitter:description" content="Why Because it&rsquo;s fun and because I believe in the motto hack dumb shit
-What In the last post I mentioned that most nwsoc dies in pain without it&rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:
- Running a dynamic binary complied for Arm that doesn&rsquo;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex."/>
+<meta name="twitter:description" content="Why Because it&#39;s fun and because I believe in the motto hack dumb shit
+What In the last post I mentioned that most nwsoc dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:
+ Running a non static binary complied for arm that doesn&#39;t use glibc Hooking function calls in a binary using LD_PRELOAD  Different LibC Computers are complex."/>
 
       
 <script type="application/javascript">
@@ -127,16 +124,16 @@ if (!doNotTrack) {
     </header>
 
     <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="why">Why</h1>
-<p>Because it&rsquo;s fun and because I believe in the motto <a href="https://www.youtube.com/watch?v=ZmZ_tvbhJ0I">hack dumb shit</a></p>
+<p>Because it's fun and because I believe in the motto <a href="https://www.youtube.com/watch?v=ZmZ_tvbhJ0I">hack dumb shit</a></p>
 <h1 id="what">What</h1>
-<p>In the last post I mentioned that most <code>nwsoc</code> dies in pain without it&rsquo;s kernel module is not supplied. The scope of this article is to give a brief overview on two things:</p>
+<p>In the last post I mentioned that most <code>nwsoc</code> dies in pain if the right kernel module is not supplied. The scope of this article is ot give a brief overview on two things:</p>
 <ol>
-<li>Running a dynamic binary complied for Arm that doesn&rsquo;t use glibc</li>
+<li>Running a non static binary complied for arm that doesn't use glibc</li>
 <li>Hooking function calls in a binary using LD_PRELOAD</li>
 </ol>
 <h1 id="different-libc">Different LibC</h1>
 <p>Computers are complex. To deal with this complexity C programmers found out that it was handy to have commonly used functions readily available, so they invented the standard C library. As with all inventions there were different idea on what was best, and so there were different standard library implementations.</p>
-<p>Most linux system you&rsquo;re likely to encounter will run the GNU implementation of the C standard library. You can tell that&rsquo;s the case just by doing:</p>
+<p>Most linux system you're likely to encounter will run the GNU implementation of the C standard library. You can tell that's the case just by doing:</p>
 <pre><code>➜  squashfs-root-0 objdump -T /bin/git | head
 /bin/git:     file format elf64-x86-64
 DYNAMIC SYMBOL TABLE:
@@ -149,13 +146,13 @@ DYNAMIC SYMBOL TABLE:
 </code></pre><p>By using dumping the dynamic symbols we can see that they all refer <code>GLIBC</code>, which stands for GnuLIBC. Git runs fine on my machine, because I have the right LibC. What happens if you run a program compiled with a different libc?</p>
 <pre><code>➜  squashfs-root-0 ./nwsoc 
 /lib/ld-uClibc.so.0: No such file or directory
-</code></pre><p>It doesn&rsquo;t work. We need to have the right libc. Two things to note here:</p>
+</code></pre><p>It doesn't work. We need to have the right libc. Two things to note here:</p>
 <ol>
-<li>Don&rsquo;t even dare to change your computer libc. You will suffer greatly. If you want to know what happened when I tired to do so just ask my friend <a href="https://twitter.com/_dntt1">Daniele</a></li>
+<li>Don't even dare to change your computer libc. You will suffer greatly. If you want to know what happened when I tired to do so just ask my friend <a href="https://twitter.com/_dntt1">Daniele</a></li>
 <li>If you try to do this on your computer, with a binary compiled for another architecture you might get something like <code>wrong exec format</code>. On my system I added qemu user to <a href="https://en.wikipedia.org/wiki/Binfmt_misc">bin_fmt</a>. On arch is super simple, but ymmv.</li>
 </ol>
 <h1 id="getting-a-system-with-the-right-libc">Getting a system with the right LibC</h1>
-<p>Sometimes, if you&rsquo;re lucky, you might find a root filesystem inside the binary archive you&rsquo;re reversing. This is super handy, but still not optimal for reasons that we&rsquo;ll see later. The best way I&rsquo;ve found so far is to use <a href="https://buildroot.org/">buildroot</a> to, you guessed it, build a root file system that uses a given libc.</p>
+<p>Sometimes, if you're lucky, you might find a root filesystem inside the binary archive you're reversing. This is super handy, but still not optimal for reasons that we'll see later. The best way I've found so far is to use <a href="https://buildroot.org/">buildroot</a> to, you guessed it, build a root file system that uses a given libc.</p>
 <p>Building a rootfs using buildroot is super simple:</p>
 <ol>
 <li>Download buildroot for the <a href="https://buildroot.org/download.html">official website</a></li>
@@ -175,6 +172,7 @@ drwxrwxr-x    2 carlo carlo  12K 12. Jan 16:27 configs
 drwxr-xr-x    5 carlo carlo 4,0K 12. Jan 16:28 docs
 drwxrwxr-x   18 carlo carlo 4,0K 12. Jan 16:27 fs
 drwxrwxr-x    2 carlo carlo 4,0K 12. Jan 16:27 linux
+-rw-rw-r--    1 carlo carlo  44K 12. Jan 16:27 Makefile
 -rw-rw-r--    1 carlo carlo 2,3K 12. Jan 16:27 Makefile.legacy
 drwxrwxr-x 2164 carlo carlo  68K 12. Jan 16:27 package
 -rw-rw-r--    1 carlo carlo 1,1K 12. Jan 16:27 README
@@ -183,11 +181,11 @@ drwxrwxr-x    3 carlo carlo 4,0K 12. Jan 16:27 system
 drwxrwxr-x    5 carlo carlo 4,0K 12. Jan 16:27 toolchain
 drwxrwxr-x    3 carlo carlo 4,0K 12. Jan 16:27 utils
 </code></pre><ol start="3">
-<li>Run <code>make menuconfig</code>. For our case we need a ARM based filesystem, so under <code>Target Options-&gt;Target Architecture</code> we&rsquo;ll select <code>ARM little endian</code>. Libc selection happens under <code>Toolchain-&gt;C Library</code>. We can also ask buildroot to create a development system for our give configuration. This take some time, but will be super helpful later. This last step is simply a matter of selecting every tool we like to use under <code>Target Packages</code></li>
+<li>Run <code>make menuconfig</code>. For our case we need a ARM based filesystem, so under <code>Target Options-&gt;Target Architecture</code> we'll select <code>ARM little endian</code>. Libc selection happens under <code>Toolchain-&gt;C Library</code>. We can also ask buildroot to create a development system for our give configuration. This will take some time, but will be super helpful later. This last step is simply a matter of selecting every tool we like to use under <code>Target Packages</code></li>
 <li>Wait. Even if your computer is fast this will take a while. With my big machine it usually takes around 1.5 hours, while on the ultrabook it takes easily 4.</li>
 </ol>
-<h1 id="chroot-in-the-new-file-system">Chroot in the new file system</h1>
-<p>If you made so far we are now ready to run <code>nwsoc</code>. We just have to chroot into the filesystem buildroot has just created, which is in <code>buildroot-2019.02.8/output/</code>. In this folder there&rsquo;re quite a few things:</p>
+<h1 id="choot-in-the-new-file-system">Choot in the new file system</h1>
+<p>If you made so far we are now ready to run <code>nwsoc</code>. We just have to chroot into the filesystem buildroot has just created, which can be found <code>buildroot-2019.02.8/output/</code>. In this folder there're quite a few things:</p>
 <pre><code>➜  output ll
 total 20K
 drwxr-xr-x 55 carlo carlo 4,0K 23. Dez 12:23 build
@@ -195,8 +193,8 @@ drwxr-xr-x  9 carlo carlo 4,0K 23. Dez 11:32 host -&gt; a toolchain to compile s
 drwxr-xr-x  2 carlo carlo 4,0K 23. Dez 12:23 images
 lrwxrwxrwx  1 carlo carlo  121 23. Dez 12:23 staging -&gt; symlink to buildroot-2019.02.8/output/host/arm-buildroot-linux-uclibcgnueabi/sysroot
 drwxr-xr-x 17 carlo carlo 4,0K 23. Dez 12:02 target -&gt; a new rootfs with uclibc and the userspace tools we built 
-</code></pre><p>If you haven&rsquo;t messed yet with <a href="https://en.wikipedia.org/wiki/Binfmt_misc">bin_fmt</a> none of the following will make sense. If you don&rsquo;t wont to do so, please add prefix every command with <code>qemu-user</code>. Remember that you&rsquo;ll have to copy <code>qemu-user</code> inside the chroot.</p>
-<p>Let&rsquo;s do it:</p>
+</code></pre><p>If you haven't messed yet with <a href="https://en.wikipedia.org/wiki/Binfmt_misc">bin_fmt</a> none of the following will make sense. If you don't wont to do so, please add prefix every command with <code>qemu-user</code>. Remember that you'll have to copy <code>qemu-user</code> inside the chroot.</p>
+<p>Let's do it:</p>
 <pre><code>➜  printer sudo chroot uclib_chroot /bin/sh
 / # ls -la
 total 8212
@@ -227,9 +225,9 @@ Starting Planet ...
 [PLANET] &lt;ILLEGAL&gt;:main(243):sched_getparam() failed. &lt;Function not implemented&gt;
 [PLANET] &lt;ILLEGAL&gt;:psmStopPlanet(953):*** FATAL ERROR -- Send emergency code(1) to Main.
 </code></pre><p><strong>It runs. YAY!!</strong>
-If you didn&rsquo;t configure binfmt on your system you have to run <code>qemu-arm nwsoc</code></p>
+Please that if bin_fmt isn't configured on your system you will have to run <code>qemu-arm nwsoc</code></p>
 <h1 id="patching-functions">Patching functions</h1>
-<p>A few of you will have noted that while the demon is technically running, it dies badly because it&rsquo;s trying to use some functions that can&rsquo;t run properly in a chroot. We can fix this using <code>LD_PRELOAD</code>.</p>
+<p>A few of you will have noted that while the deamon is technically running, it dies badly because it's trying to use some functions that can't run properly in a chroot. This is a issue we can fix using <code>LD_PRELOAD</code>.</p>
 <pre><code># ./qemu-arm -E LD_PRELOAD=./pthread_patch.so nwsoc
 
 Starting Planet ...
@@ -242,22 +240,22 @@ Unsupported ioctl: cmd=0x400cfe00
 [PLANET] &lt;ILLEGAL&gt;:prInit(859):D4_GetDeviceID return error(-4) 
 [PLANET] &lt;ILLEGAL&gt;:PNPSMStartMain(199):prIF(prInit()) initialize error!!
 [PLANET] &lt;ILLEGAL&gt;:psmStopPlanet(953):*** FATAL ERROR -- Send emergency code(4) to Main.
-</code></pre><p>What the hell just happened? Simple, just stubbed <code>pthread_attr_setschedparam</code> and <code>pthread_attr_setdetachstate</code>. The first time I saw this I was like &ldquo;OMFG&rdquo; it literally blew my mind, but at the core it&rsquo;s super simple.</p>
+</code></pre><p>What the hell just happened? Simple, just stubbed <code>pthread_attr_setschedparam</code> and <code>pthread_attr_setdetachstate</code>. The first time I saw this I was like &ldquo;OMFG&rdquo; it literally blew my mind, but at the core it's super simple.</p>
 <ol>
 <li>Find what function makes your program crash. For example, <code>pthread_attr_setschedparam</code> tries to change the scheduling priority of the current running process, which fails under <code>qemu-arm</code></li>
-<li>Understand what&rsquo;s the &ldquo;normal&rdquo; return value. In this case it&rsquo;s super simple, just check on the manpages and you&rsquo;re done.</li>
+<li>Understand what's the &ldquo;normal&rdquo; return value. In this case it's super simple, just check on the manpages and you're done.</li>
 <li>Create a new function that has the same name and the same input parameters. In this case is pretty simple:</li>
 </ol>
-<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">int</span> <span class="nf">pthread_attr_setschedparam</span><span class="p">(</span><span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">sched_param</span> <span class="o">*</span><span class="n">param</span><span class="p">){</span>
-        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setschedparam</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> sched_param <span style="color:#f92672">*</span>param){
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
 
-<span class="kt">int</span> <span class="nf">pthread_attr_setdetachstate</span><span class="p">(</span><span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">detachstate</span><span class="p">){</span>
-        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>I&rsquo;ve included pthread.h just to use the typedefs. Call me lazy if you want.</p>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setdetachstate</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> detachstate){
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>I've included pthread.h just to use the typedefs. Call me lazy if you want.</p>
 <ol start="4">
 <li>Compile this function as a library using the toolchain built before, this extra step will make sure that our hook will match the types that the program is expecting. Again, pretty simple:
 <code>arm-buildroot-linux-uclibcgnueabi-gcc -c -fpic ./pthread_patch.c -o ./pthread_patch.o</code>
@@ -266,8 +264,8 @@ Unsupported ioctl: cmd=0x400cfe00
 <li>Find out what you have to patch next.</li>
 </ol>
 <h1 id="conclusion">Conclusion</h1>
-<p>I don&rsquo;t know. I hope that you learned something useful, for sure I had great fun writing this. There are a few things I didn&rsquo;t mention, for example <code>nwsoc</code> needs some additional libraries to run, but they are in the rootfs.
-Super important, don&rsquo;t do the dumb mistake of ld preloding something into qemu, use <code>-E</code> flag.</p>
+<p>I don't know. I hope that you learnt something usefull, for sure I had great fun writing this. There are a few things I didn't mention, for example <code>nwsoc</code> needs some additional librarys to run, but they can be found in the unpacked rootfs.
+Super important, don't do the dumb mistake of ld preloding something into qemu, use <code>-E</code> flag.</p>
 <ul class="pa0">
   
 </ul>

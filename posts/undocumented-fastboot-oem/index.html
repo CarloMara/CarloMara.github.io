@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Carlo Maragno  | Undocumented Fastboot Oem Commands</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.74.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.ed9efba026cb0a99feab1ef638a16c53.css" rel="stylesheet">
+    
+    
+    
+      <link rel="stylesheet" href="/static/syntax.css">
+    
+
+    
+      
+    
+
+    
+    
+    <meta property="og:title" content="Undocumented Fastboot Oem Commands" />
+<meta property="og:description" content="Introduction Printers are cool because they are, but I have friends that remind me at least weekly that hacking a printer is not useful. Every time it&rsquo;s mostly the same thing all over again, find a 1990 type bug, write a stupid script, done. Some months ago, I started a new project, a wild ride inside Google&rsquo;s humongous codebase. While most of Google code, especially Android, is open source, some parts are not." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://carlo.marag.no/posts/undocumented-fastboot-oem/" />
+<meta property="article:published_time" content="2020-09-18T10:45:10+02:00" />
+<meta property="article:modified_time" content="2020-09-18T10:45:10+02:00" />
+<meta itemprop="name" content="Undocumented Fastboot Oem Commands">
+<meta itemprop="description" content="Introduction Printers are cool because they are, but I have friends that remind me at least weekly that hacking a printer is not useful. Every time it&rsquo;s mostly the same thing all over again, find a 1990 type bug, write a stupid script, done. Some months ago, I started a new project, a wild ride inside Google&rsquo;s humongous codebase. While most of Google code, especially Android, is open source, some parts are not.">
+<meta itemprop="datePublished" content="2020-09-18T10:45:10+02:00" />
+<meta itemprop="dateModified" content="2020-09-18T10:45:10+02:00" />
+<meta itemprop="wordCount" content="1495">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Undocumented Fastboot Oem Commands"/>
+<meta name="twitter:description" content="Introduction Printers are cool because they are, but I have friends that remind me at least weekly that hacking a printer is not useful. Every time it&rsquo;s mostly the same thing all over again, find a 1990 type bug, write a stupid script, done. Some months ago, I started a new project, a wild ride inside Google&rsquo;s humongous codebase. While most of Google code, especially Android, is open source, some parts are not."/>
+
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-157999160-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+  </head>
+
+  <body class="ma0 sans-serif production">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-moon-gray">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="https://carlo.marag.no" class="f3 fw2 hover-white no-underline white-90 dib">
+      <i class="fas fa-home"></i>
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/posts/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+        </ul>
+      
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw9 center ph3">
+
+    <header class="mt4 w-100">
+      <p class="f6 b helvetica tracked">
+          
+        POSTS
+      </p>
+      <h1 class="f1 athelas mb1">Undocumented Fastboot Oem Commands</h1>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-09-18T10:45:10&#43;02:00">September 18, 2020</time>
+      
+      
+    </header>
+
+    <section class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="introduction">Introduction</h1>
+<p>Printers are cool because they are, but I have friends that remind me at least weekly that hacking a printer is not useful. Every time it&rsquo;s mostly the same thing all over again, find a 1990 type bug, write a stupid script, done.
+Some months ago, I started a new project, a wild ride inside Google&rsquo;s humongous codebase. While most of Google code, especially Android, is open source, some parts are not.
+I&rsquo;ll try to talk about one such case, the bootloader of a Pixel 3 phone.</p>
+<h1 id="a-bit-of-context">A bit of context</h1>
+<p>What you are about to read mostly applies to Android 10 and later versions. Much has changed, but the exciting part for us is that now fastboot can run in userspace mode.</p>
+<p><a href="https://source.android.com/devices/bootloader/fastbootd">Here</a> you can find the nitty-gritty details, the TL;DR is something like this:</p>
+<ol>
+<li>Recovery and Fastboot partitions are now the same thing. One less partition, more code reuse. Nice.</li>
+<li>The mechanisms to start Recovery or Fastboot is now slightly different, but this is taken care of by the bootloader.</li>
+<li>Userspace Fastboot can&rsquo;t issue some types of commands, namely OEM.</li>
+</ol>
+<p>Because Userspace fastboot can&rsquo;t issue OEM commands, we will have to dig into the bootloader code.</p>
+<h1 id="lets-start">Let&rsquo;s start</h1>
+<p>Ok, we got a binary, let&rsquo;s see what&rsquo;s inside.</p>
+<pre><code>➜  strings -n 12 bootloader-sargo-b4s4-0.2-6066691.img | head
+b4s4-0.2-6066691
+partition table
+A19F205F-CCD8-4B6D-8F1E-2D9BC24CFFB1
+8a09a857-0ead-42a8-88f0-e3ead7f08788
+DEA0BA2C-CBDD-4805-B4F9-F428251C3E98
+332e0f87-b798-4b5f-a843-bce64d333a92
+77036CD4-03D5-42BB-8ED1-37E5A88BAA34
+b0a31f69-8cbe-4481-afa6-14e525b9aa08
+xbl_config_a
+5A325AE4-4276-B66D-0ADD-3494DF27706A
+</code></pre><p>As soon as I saw that, I started wondering when phones started using UEFI. UEFI and EDK2 are cool, but when did they end up being used in phones?</p>
+<p><a href="https://worthdoingbadly.com/qcomxbl/">Here</a> there are some notes on the history of why QC uses UEFI. If I understand it correctly, it&rsquo;s because they want to support Windows on ARM.</p>
+<p>Now that we know it&rsquo;s UEFI, and we satisfied our curiosity on why it&rsquo;s UEFI, we can start working on it.</p>
+<h1 id="getting-the-code---aka-dont-binwalk-uefi">Getting the code - aka don&rsquo;t binwalk uefi</h1>
+<p>Binwalk on the bootloader image will yield precisely zero. UEFI images are very structured, support compression, and allow for nested volumes. Ether, you know what you are looking at, or you are not going to get far.</p>
+<p>Get uefi-firmware-parser from pip with</p>
+<p><code>python -m pip install --user uefi-firmware-parser</code></p>
+<p>uefi-firmware-parser it&rsquo;s more of a framework and can be used in scripts. Fortunately, they provide a super nice and handy wrapper. The script can brute force <code>-b</code> any unknown image type, searching for known UEFI magic numbers.</p>
+<pre><code>➜  uefi-firmware-parser -b bootloader-sargo-b4s4-0.2-6066691.img                                                                                                                                                                                                                                         
+Found volume magic at 0x885a8                                                                                                                                                                                                                                                   
+Firmware Volume: 8c8ce578-8a3d-4f1c-9935-896185c32dd3 attr 0x000cfeff, rev 2, cksum 0xc520, size 0x270000 (2555904 bytes)                                                                                                                                                       
+  Firmware Volume Blocks: (4992, 0x200)                                                                                                                                                                                                                                         
+  File 0: ffffffff-ffff-ffff-ffff-ffffffffffff type 0xf0, attr 0x00, state 0x07, size 0xfa0 (4000 bytes), (ffs padding)                                                                                                                                                         
+  File 1: 8af09f13-44c5-96ec-1437-dd899cb5ee5d type 0x03, attr 0x28, state 0x07, size 0x28018 (163864 bytes), (security core)                                                                                                                                                   
+    Section 0: type 0x19, size 0xf34 (3892 bytes) (Raw section)                                                                                                                                                                                                                 
+    Section 1: type 0x12, size 0x270cc (159948 bytes) (Terse executable (TE) section)                                                                                                                                                                                           
+  File 2: dde58710-41cd-4306-dbfb-3fa90bb1d2dd type 0x02, attr 0x00, state 0x07, size 0x261e (9758 bytes), (freeform)                                                                                                                                                           
+    Section 0: type 0x15, size 0x1e (30 bytes) (User interface name section)                                                                                                                                                                                                    
+    Name: uefiplat.cfg                                                                                                                                                                                                                                                          
+    Section 1: type 0x19, size 0x25e6 (9702 bytes) (Raw section)                                                                                                                                                                                                                
+  File 3: 9e21fd93-9c72-4c15-8c4b-e77f1db2d792 type 0x0b, attr 0x00, state 0x07, size 0x19938a (1676170 bytes), (firmware volume image)                                                                                                                                         
+    Section 0: type 0x02, size 0x199372 (1676146 bytes) (Guid Defined section)                                                                                                                                                                                                  
+      Guid-Defined: 1d301fe9-be79-4353-91c2-d23bc959ae0c offset= 0x18 attrs= 0x1 (PROCESSING_REQUIRED)                                                                                                                                                                          
+Found volume magic at 0x7125e8                                                                                                                                                                                                                                                  
+Firmware Volume: 8c8ce578-8a3d-4f1c-9935-896185c32dd3 attr 0x0003feff, rev 2, cksum 0x1cd9, size 0xfd000 (1036288 bytes)                                                                                                                                                        
+  Firmware Volume Blocks: (2024, 0x200)                                                                                                                                                                                                                                         
+  File 0: 9e21fd93-9c72-4c15-8c4b-e77f1db2d792 type 0x0b, attr 0x00, state 0x07, size 0x4019d (262557 bytes), (firmware volume image)                                                                                                                                           
+    Section 0: type 0x02, size 0x40185 (262533 bytes) (Guid Defined section)                                                                                                                                                                                                    
+      Guid-Defined: ee4e5898-3914-4259-9d6e-dc7bd79403cf offset= 0x18 attrs= 0x1 (PROCESSING_REQUIRED)                                                                                                                                                                          
+        Section 0: type 0x19, size 0x4 (4 bytes) (Raw section)                                                                                                                                                                                                                  
+        Section 1: type 0x17, size 0x14ea04 (1370628 bytes) (Firmware volume image section)                                                                                                                                                                                     
+          Firmware Volume: 8c8ce578-8a3d-4f1c-9935-896185c32dd3 attr 0x0003feff, rev 2, cksum 0xb874, size 0x14ea00 (1370624 bytes)                                                                                                                                             
+            Firmware Volume Blocks: (21416, 0x40)                                                                                                                                                                                                                               
+            File 0: ffffffff-ffff-ffff-ffff-ffffffffffff type 0xf0, attr 0x00, state 0x07, size 0x2c (44 bytes), (ffs padding)                                                                                                                                                  
+            File 1: 8d40eae1-aebd-4c76-8929-62d04d3e0882 type 0x09, attr 0x00, state 0x07, size 0x5e038 (385080 bytes), (application)                                                                                                                                           
+              Section 0: type 0x15, size 0x1c (28 bytes) (User interface name section)                                                                                                                                                                                          
+              Name: LinuxLoader                                                                                                                                                                                                                                                 
+              Section 1: type 0x10, size 0x5e004 (385028 bytes) (PE32 image section)                                                                                                                                                                                            
+            File 2: ff725d98-21d5-4e79-80bc-82c71defec81 type 0x07, attr 0x00, state 0x07, size 0x13050 (77904 bytes), (driver)                                                                                                                                                 
+              Section 0: type 0x10, size 0x13004 (77828 bytes) (PE32 image section)                                                     
+              Section 1: type 0x15, size 0x34 (52 bytes) (User interface name section)                                                                                                                                                                                          
+              Name: FastbootTransportUsbDxe                                                                                                                                                                        
+            File 3: 61f96920-c022-4b2b-aa80-1c364a4f64b1 type 0x09, attr 0x00, state 0x07, size 0x7e040 (516160 bytes), (application)                                                                              
+              Section 0: type 0x15, size 0x24 (36 bytes) (User interface name section)                                                                                                                                                                                          
+              Name: B1c1FastbootApp                                                                      
+              Section 1: type 0x10, size 0x7e004 (516100 bytes) (PE32 image section)                                                                                                                               
+            File 4: d9b2d43d-e02f-4a86-a445-bd1474b33671 type 0x02, attr 0x00, state 0x07, size 0x32be (12990 bytes), (freeform)                                                                                   
+              Section 0: type 0x15, size 0x2a (42 bytes) (User interface name section)                                                                                                                                                                                          
+              Name: RedWarning1440.bmp                              
+              Section 1: type 0x19, size 0x327a (12922 bytes) (Raw section)                                                                                                                       
+</code></pre><p>Note that there are more files on the second volumes. I omitted them for conciseness. After extracting the files with the <code>-e</code> option, we can start reversing. Nice.</p>
+<p>(I later found out that <a href="https://github.com/anestisb/qc_image_unpacker">Anestis Bechtsoudis</a> had already written an image unpacker. I understand that this tool can unpack file 3 in volume 1, which is the main bootloader code. It&rsquo;s nice, but it&rsquo;s not necessary for the scope of this post.)</p>
+<h1 id="reversing-uefi-pe-binaries">Reversing UEFI PE binaries</h1>
+<p>Super simple. Get Ghidra, load the PE, look at it very intensively, shout &ldquo;yes&rdquo; when you finally figured it out.</p>
+<p>From above, we can see that there are two interesting files, <code>FastbootTransportUsbDxe</code> and <code>B1c1FastbootApp</code>:</p>
+<ol>
+<li>Fastboot DXE driver. At least a part of this driver is open source you can find on <a href="https://github.com/tianocore/edk2/blob/master/EmbeddedPkg/Drivers/AndroidFastbootTransportUsbDxe/FastbootTransportUsb.c">EDK2</a> GitHub repository. It&rsquo;s useful to see the code, but not essential to understand what this module does.</li>
+<li>Fastboot application handler. Closed source and most likely implemented by google. <code>B1c1FastbootApp</code> handles the command coming from <code>FastbootTransportUsbDxe</code>.</li>
+</ol>
+<p>The binary is stripped, but there are good strings to understand what&rsquo;s happening.</p>
+<p><img src="/static/undocumented-fastboot-oem/string_count.png" alt="string_count.png"></p>
+<p>2k strings. Nice. We want to understand how OEM commands work. I know that I get this error if I use a nonexisting OEM command:</p>
+<pre><code>➜  fastboot oem asd
+                                                   FAILED (remote: 'Invalid oem command asd')
+fastboot: error: Command failed
+</code></pre><p>If we are right and this is the binary handling the fastboot, we should find that string. Lo and behold:</p>
+<p><img src="/static/undocumented-fastboot-oem/invalid_oem_command.png" alt="invalid_oem_command.png"></p>
+<p>This string is used in a big function. We would expect some loop through a list of commands. From the screenshot, it&rsquo;s evident that the while loop is performing some operation on 36 elements.</p>
+<p><img src="/static/undocumented-fastboot-oem/command_loop.png" alt="command_loop.png"></p>
+<p>command_handler is initialized with a pointer to something in the bss. If we go there, at first it&rsquo;s quite ugly:</p>
+<p><img src="/static/undocumented-fastboot-oem/ugly_memory.png" alt="ugly_memory.png"></p>
+<p>But with some Ghidra magic (aka declaring a structure), we can make it ok:</p>
+<p><img src="/static/undocumented-fastboot-oem/nice_memory.png" alt="nice_memory.png"></p>
+<p>By looking at the memory access, see picture below, it&rsquo;s fairly simple to guess that the first two members are 8 bytes pointers. As you can see in the red box, a pointer is loaded into r23, and later another pointer is loaded in r23 with the value of the previous pointer minus 8 bytes (green box in the disassembly view).
+While Ghidra decompiler output might not be the greatest (it tries to display the operation as array access, but ends up using a negative index), the assembly is pretty straightforward.</p>
+<p><img src="/static/undocumented-fastboot-oem/memory_access.png" alt="memory_access.png"></p>
+<p>This is an educated guess of the structure in C:</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">fb_oem_handler_s</span><span class="p">{</span>
+  <span class="kt">char</span><span class="o">*</span> <span class="n">command_name</span><span class="p">;</span>
+  <span class="n">int64_t</span><span class="o">*</span> <span class="n">command_handler</span>
+  <span class="n">int32_t</span> <span class="n">unk0</span>
+  <span class="n">int32_t</span> <span class="n">unk1</span>
+<span class="p">}</span> <span class="n">fb_oem_handler_t</span>
+</code></pre></div><p>We found the OEM commands! After defining this structure, with a simple Ghidra script, it&rsquo;s possible to get a nice list:</p>
+<pre><code>Successfully compiled: ListBootloaderCommands.java
+ListBootloaderCommands.java&gt; Running...
+ListBootloaderCommands.java&gt; 0   &quot;setbrightness&quot;
+ListBootloaderCommands.java&gt; 1   &quot;get_config&quot;
+ListBootloaderCommands.java&gt; 2   &quot;set_config&quot;
+ListBootloaderCommands.java&gt; 3   &quot;rm_config&quot;
+ListBootloaderCommands.java&gt; 4   &quot;get_platform_info&quot;
+ListBootloaderCommands.java&gt; 5   &quot;set_platform_info&quot;
+ListBootloaderCommands.java&gt; 6   &quot;select-display-panel&quot;
+ListBootloaderCommands.java&gt; 7   &quot;esim_erase&quot;
+ListBootloaderCommands.java&gt; 8   &quot;esim_atp&quot;
+ListBootloaderCommands.java&gt; 9   &quot;esim_eid&quot;
+ListBootloaderCommands.java&gt; 10   &quot;psim_info&quot;
+ListBootloaderCommands.java&gt; 11   &quot;uart&quot;
+ListBootloaderCommands.java&gt; 12   &quot;off-mode-charge&quot;
+ListBootloaderCommands.java&gt; 13   &quot;sha1sum&quot;
+ListBootloaderCommands.java&gt; 14   &quot;ramdump&quot;
+ListBootloaderCommands.java&gt; 15   &quot;ramdump_sahara&quot;
+ListBootloaderCommands.java&gt; 16   &quot;rma&quot;
+ListBootloaderCommands.java&gt; 17   &quot;dump-chipid&quot;
+ListBootloaderCommands.java&gt; 18   &quot;check-hw-security&quot;
+ListBootloaderCommands.java&gt; 19   &quot;HALT&quot;
+ListBootloaderCommands.java&gt; 20   &quot;set_display_power_mode&quot;
+ListBootloaderCommands.java&gt; 21   &quot;citadel&quot;
+ListBootloaderCommands.java&gt; 22   &quot;enable-factory-lock&quot;
+ListBootloaderCommands.java&gt; 23   &quot;factory-lock&quot;
+ListBootloaderCommands.java&gt; 24   &quot;ddrtest&quot;
+ListBootloaderCommands.java&gt; 25   &quot;continue-factory&quot;
+ListBootloaderCommands.java&gt; 26   &quot;dmesg&quot;
+ListBootloaderCommands.java&gt; 27   &quot;pmic-dump&quot;
+ListBootloaderCommands.java&gt; 28   &quot;pmic-write&quot;
+ListBootloaderCommands.java&gt; 29   &quot;check-dp&quot;
+ListBootloaderCommands.java&gt; 30   &quot;allow-flash-super&quot;
+ListBootloaderCommands.java&gt; 31   &quot;silentota&quot;
+ListBootloaderCommands.java&gt; 32   &quot;barcode&quot;
+ListBootloaderCommands.java&gt; 33   &quot;display_color&quot;
+ListBootloaderCommands.java&gt; 34   &quot;enter-shipmode&quot;
+ListBootloaderCommands.java&gt; 35   &quot;verify-erased&quot;
+ListBootloaderCommands.java&gt; Finished!
+</code></pre><h1 id="conclusions">Conclusions</h1>
+<p>There is no documentation for the OEM commands, but it&rsquo;s reasonably trivial to understand what parameters are required when thinking about the context where they are used. For example, <code>pmic-dump</code> dumps the configuration of the Power Manager IC, <code>barcode</code> shows every device identification number as a barcode on the screen. It&rsquo;s easy to get confused at first, but it&rsquo;s just codenames and domain-specific language.<br>
+Be aware that some commands rely on other UEFI drivers to work. UEFI drivers are loaded at a fixed address, so it&rsquo;s not super tricky to map each driver handler in memory and see how it&rsquo;s used.</p>
+<p>I couldn&rsquo;t find this information anywhere on the net, and I&rsquo;ll have to admit it was pretty nice to dig into how android bootloaders operate.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6">
+      
+      
+      </div>
+    </section>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-moon-gray bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://carlo.marag.no" >
+    &copy;  Carlo Maragno 2020 
+  </a>
+    <div>
+
+
+
+<a href="https://twitter.com/CarloMara1" target="_blank" class="link-transition twitter link dib z-999 pt3 pt0-l mr1" title="Twitter link" rel="noopener" aria-label="follow on Twitter——Opens in a new window">
+  <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+<a href="https://github.com/CarloMara" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>

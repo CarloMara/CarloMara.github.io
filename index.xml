@@ -6,10 +6,19 @@
     <description>Recent content on Carlo Maragno</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 11 Apr 2020 16:41:37 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 18 Sep 2020 10:45:10 +0200</lastBuildDate>
     
 	<atom:link href="https://carlo.marag.no/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Undocumented Fastboot Oem Commands</title>
+      <link>https://carlo.marag.no/posts/undocumented-fastboot-oem/</link>
+      <pubDate>Fri, 18 Sep 2020 10:45:10 +0200</pubDate>
+      
+      <guid>https://carlo.marag.no/posts/undocumented-fastboot-oem/</guid>
+      <description>Introduction Printers are cool because they are, but I have friends that remind me at least weekly that hacking a printer is not useful. Every time it&amp;rsquo;s mostly the same thing all over again, find a 1990 type bug, write a stupid script, done. Some months ago, I started a new project, a wild ride inside Google&amp;rsquo;s humongous codebase. While most of Google code, especially Android, is open source, some parts are not.</description>
+    </item>
     
     <item>
       <title>QEMU IOCTL Hooks</title>
